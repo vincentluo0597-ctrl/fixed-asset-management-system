@@ -1,0 +1,25 @@
+-- Alter equipment table to align with Equipment entity fields (non-breaking: all new columns nullable)
+
+ALTER TABLE equipment
+    ADD COLUMN model VARCHAR(100) NULL,
+    ADD COLUMN specifications VARCHAR(500) NULL,
+    ADD COLUMN brand VARCHAR(100) NULL,
+    ADD COLUMN category_id BIGINT NULL,
+    ADD COLUMN supplier_id BIGINT NULL,
+    ADD COLUMN purchase_contract_id BIGINT NULL,
+    ADD COLUMN technical_parameters VARCHAR(1000) NULL,
+    ADD COLUMN purchase_price DECIMAL(10,2) NULL,
+    ADD COLUMN purchase_date DATE NULL,
+    ADD COLUMN source VARCHAR(20) NULL,
+    ADD COLUMN serial_number VARCHAR(100) NULL,
+    ADD COLUMN asset_number VARCHAR(100) NULL,
+    ADD COLUMN warranty_period_months INT NULL,
+    ADD COLUMN warranty_expiry_date DATE NULL,
+    ADD COLUMN image_urls VARCHAR(2000) NULL,
+    ADD COLUMN document_urls VARCHAR(2000) NULL,
+    ADD COLUMN manual_url VARCHAR(500) NULL,
+    ADD COLUMN manufacture_date DATE NULL,
+    ADD COLUMN service_life_years INT NULL,
+    ADD COLUMN depreciation_rate DECIMAL(5,4) NULL,
+    ADD COLUMN current_value DECIMAL(10,2) NULL,
+    ADD COLUMN remarks VARCHAR(1000) NULL;

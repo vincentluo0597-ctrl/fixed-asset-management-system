@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>供应商管理 - 资产管理后台</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
+        header { background: #1677ff; color: #fff; padding: 14px 20px; }
+        header h1 { margin:0; font-size: 18px; }
+        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
+        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
+        main { padding: 20px; }
+        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; font-size: 12px; }
+        th { background: #fafafa; }
+        .toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+        button { padding: 8px 12px; background: #1677ff; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        button.secondary { background: #555; }
+        button.danger { background: #ff4d4f; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-grid label { display:block; font-size: 12px; margin-bottom: 4px; }
+        .form-actions { margin-top: 10px; display: flex; gap: 10px; }
+        .pagination { margin-top: 10px; display: flex; gap: 6px; align-items: center; }
+    </style>
+    <script>
+        let currentPage = 0;
+        let pageSize = 10;
+        let editingId = null;
+
+        async function loadSuppliers(page = 0) {
+            currentPage = page;
+            const res = await fetch(`/api/suppliers/page?page=${page}&size=${pageSize}`);
+            const pageData = await res.json();
+            const tbody = document.querySelector('#suppliers-tbody');
+            tbody.innerHTML = '';
+            pageData.content.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.id ?? ''}</td>
+                    <td>${s.code ?? ''}</td>
+                    <td>${s.name ?? ''}</td>
+                    <td>${s.type ?? ''}</td>
+                    <td>${s.contactPerson ?? ''}</td>
+                    <td>${s.phone ?? ''}</td>
+                    <td>${s.creditRating ?? ''}</td>
+                    <td>${s.isActive ? '启用' : '停用'}</td>
+                    <td>
+                        <button onclick='openEditForm(${JSON.stringify(s).replace(/"/g, "&quot;")})'>编辑</button>
+                        <button class='danger' onclick='deleteSupplier(${s.id})'>删除</button>
+                        ${!s.isActive ? `<button onclick='activateSupplier(${s.id})'>启用</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('page-info').textContent = `第 ${pageData.number + 1} / ${pageData.totalPages} 页，共 ${pageData.totalElements} 条`;
+            document.getElementById('btn-prev').disabled = pageData.first;
+            document.getElementById('btn-next').disabled = pageData.last;
+        }
+
+        function openCreateForm() {
+            editingId = null;
+            document.getElementById('form-title').textContent = '新增供应商';
+            document.getElementById('code').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('type').value = '';
+            document.getElementById('contactPerson').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('website').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('creditRating').value = '';
+            document.getElementById('isActive').checked = true;
+            document.getElementById('remarks').value = '';
+        }
+
+        function openEditForm(s) {
+            editingId = s.id;
+            document.getElementById('form-title').textContent = '编辑供应商';
+            document.getElementById('code').value = s.code ?? '';
+            document.getElementById('name').value = s.name ?? '';
+            document.getElementById('type').value = s.type ?? '';
+            document.getElementById('contactPerson').value = s.contactPerson ?? '';
+            document.getElementById('phone').value = s.phone ?? '';
+            document.getElementById('email').value = s.email ?? '';
+            document.getElementById('website').value = s.website ?? '';
+            document.getElementById('address').value = s.address ?? '';
+            document.getElementById('creditRating').value = s.creditRating ?? '';
+            document.getElementById('isActive').checked = !!s.isActive;
+            document.getElementById('remarks').value = s.remarks ?? '';
+        }
+
+        async function saveSupplier() {
+            const payload = {
+                code: document.getElementById('code').value.trim(),
+                name: document.getElementById('name').value.trim(),
+                type: document.getElementById('type').value || null,
+                contactPerson: document.getElementById('contactPerson').value.trim() || null,
+                phone: document.getElementById('phone').value.trim() || null,
+                email: document.getElementById('email').value.trim() || null,
+                website: document.getElementById('website').value.trim() || null,
+                address: document.getElementById('address').value.trim() || null,
+                creditRating: document.getElementById('creditRating').value.trim() || null,
+                isActive: document.getElementById('isActive').checked,
+                remarks: document.getElementById('remarks').value.trim() || null
+            };
+            const headers = { 'Content-Type': 'application/json' };
+            let res;
+            if (editingId) {
+                res = await fetch(`/api/suppliers/${editingId}`, { method: 'PUT', headers, body: JSON.stringify(payload) });
+            } else {
+                res = await fetch('/api/suppliers', { method: 'POST', headers, body: JSON.stringify(payload) });
+            }
+            if (!res.ok) {
+                const text = await res.text();
+                alert('保存失败：' + text);
+            } else {
+                alert('保存成功');
+                openCreateForm();
+                loadSuppliers(currentPage);
+            }
+        }
+
+        async function deleteSupplier(id) {
+            if (!confirm('确认删除该供应商（将停用）？')) return;
+            const res = await fetch(`/api/suppliers/${id}`, { method: 'DELETE' });
+            if (!res.ok) {
+                alert('删除失败');
+            } else {
+                alert('删除成功（已停用）');
+                loadSuppliers(currentPage);
+            }
+        }
+
+        async function activateSupplier(id) {
+            const res = await fetch(`/api/suppliers/${id}/activate`, { method: 'POST' });
+            if (!res.ok) {
+                alert('启用失败');
+            } else {
+                alert('已启用');
+                loadSuppliers(currentPage);
+            }
+        }
+
+        async function searchSuppliers() {
+            const keyword = document.getElementById('keyword').value.trim();
+            if (!keyword) { loadSuppliers(0); return; }
+            const res = await fetch(`/api/suppliers/search?keyword=${encodeURIComponent(keyword)}&page=0&size=${pageSize}`);
+            const pageData = await res.json();
+            const tbody = document.querySelector('#suppliers-tbody');
+            tbody.innerHTML = '';
+            pageData.content.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.id ?? ''}</td>
+                    <td>${s.code ?? ''}</td>
+                    <td>${s.name ?? ''}</td>
+                    <td>${s.type ?? ''}</td>
+                    <td>${s.contactPerson ?? ''}</td>
+                    <td>${s.phone ?? ''}</td>
+                    <td>${s.creditRating ?? ''}</td>
+                    <td>${s.isActive ? '启用' : '停用'}</td>
+                    <td>
+                        <button onclick='openEditForm(${JSON.stringify(s).replace(/"/g, "&quot;")})'>编辑</button>
+                        <button class='danger' onclick='deleteSupplier(${s.id})'>删除</button>
+                        ${!s.isActive ? `<button onclick='activateSupplier(${s.id})'>启用</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('page-info').textContent = `搜索结果 共 ${pageData.totalElements} 条`;
+            document.getElementById('btn-prev').disabled = true;
+            document.getElementById('btn-next').disabled = true;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            openCreateForm();
+            loadSuppliers(0);
+        });
+    </script>
+</head>
+<body>
+<header>
+    <h1>资产管理后台</h1>
+    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
+    <div style="clear:both"></div>
+    </header>
+<nav>
+    <a href="/admin">仪表盘</a>
+    <a href="/admin/suppliers">供应商管理</a>
+    <a href="/admin/categories">设备分类管理</a>
+    <a href="/admin/equipment">设备管理</a>
+    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
+    <a href="/admin/locations">位置管理</a>
+    </nav>
+<main>
+    <div class="card">
+        <div class="toolbar">
+            <input id="keyword" type="text" placeholder="按名称/编码搜索">
+            <button onclick="searchSuppliers()">搜索</button>
+            <span style="flex:1"></span>
+            <button onclick="openCreateForm()">新增供应商</button>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>编码</th>
+                <th>名称</th>
+                <th>类型</th>
+                <th>联系人</th>
+                <th>电话</th>
+                <th>信用评级</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="suppliers-tbody"></tbody>
+        </table>
+        <div class="pagination">
+            <button id="btn-prev" onclick="loadSuppliers(Math.max(0, currentPage-1))">上一页</button>
+            <span id="page-info">第 1 / 1 页</span>
+            <button id="btn-next" onclick="loadSuppliers(currentPage+1)">下一页</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 id="form-title">新增供应商</h3>
+        <div class="form-grid">
+            <div>
+                <label>编码</label>
+                <input id="code" placeholder="唯一编码">
+            </div>
+            <div>
+                <label>名称</label>
+                <input id="name" placeholder="供应商名称">
+            </div>
+            <div>
+                <label>类型</label>
+                <select id="type">
+                    <option value="">-- 请选择 --</option>
+                    <option value="制造商">制造商</option>
+                    <option value="代理商">代理商</option>
+                    <option value="经销商">经销商</option>
+                    <option value="服务商">服务商</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div>
+                <label>联系人</label>
+                <input id="contactPerson" placeholder="联系人">
+            </div>
+            <div>
+                <label>电话</label>
+                <input id="phone" placeholder="电话">
+            </div>
+            <div>
+                <label>邮箱</label>
+                <input id="email" placeholder="邮箱">
+            </div>
+            <div>
+                <label>网站</label>
+                <input id="website" placeholder="网站">
+            </div>
+            <div>
+                <label>地址</label>
+                <input id="address" placeholder="地址">
+            </div>
+            <div>
+                <label>信用评级</label>
+                <input id="creditRating" placeholder="如 A/A+/B">
+            </div>
+            <div>
+                <label>启用</label>
+                <input id="isActive" type="checkbox" checked>
+            </div>
+            <div style="grid-column: 1 / span 2">
+                <label>备注</label>
+                <input id="remarks" placeholder="备注信息">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button onclick="saveSupplier()">保存</button>
+            <button class="secondary" onclick="openCreateForm()">重置</button>
+        </div>
+    </div>
+    </main>
+</body>
+</html>

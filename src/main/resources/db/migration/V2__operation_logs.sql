@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS operation_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    actor VARCHAR(100),
+    entity_type VARCHAR(50) NOT NULL,
+    entity_id BIGINT,
+    action VARCHAR(50) NOT NULL,
+    details VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

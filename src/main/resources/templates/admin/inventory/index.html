@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>盘库（设备一览）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="admin-header">
+  <div class="wrap">
+    <div class="brand">资产管理后台</div>
+    <nav>
+      <a href="/admin">首页</a>
+      <a href="/admin/users">用户管理</a>
+      <a href="/admin/equipment">设备管理</a>
+      <a href="/admin/transfers">设备调用</a>
+      <a href="/admin/inventory">盘库</a>
+      <a href="/admin/locations">位置管理</a>
+      <a href="/admin/categories">分类管理</a>
+      <a href="/admin/suppliers">供应商管理</a>
+    </nav>
+  </div>
+</div>
+
+<div class="admin-container">
+  <div class="section-title">盘库（设备一览）</div>
+  <div class="card">
+    <div class="toolbar">
+      <a href="/admin" class="btn btn-secondary">返回管理首页</a>
+      <button class="btn btn-primary" onclick="reloadAll()">刷新数据</button>
+      <span id="msg" class="hidden"></span>
+      <span class="spacer"></span>
+    </div>
+  </div>
+
+<div class="toolbar">
+  <label>状态：</label>
+  <select id="filterStatus" onchange="onFilterChanged()"></select>
+  <label>分类：</label>
+  <select id="filterCategoryId" onchange="onFilterChanged()"></select>
+  <label>位置：</label>
+  <select id="filterLocationId" onchange="onFilterChanged()"></select>
+  <label>保管人：</label>
+  <select id="filterKeeperId" onchange="onFilterChanged()"></select>
+  <label>搜索：</label>
+  <input id="searchKeyword" type="text" placeholder="名称/型号/品牌/序列号/资产编号" style="width:220px;" />
+  <button class="btn" onclick="onSearch()">搜索</button>
+  <button class="btn" onclick="clearFilter()">清空筛选</button>
+  <button class="btn" onclick="exportCsv()">导出 CSV</button>
+  <span style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+    <label style="font-size:12px;">每页</label>
+    <select id="pageSize" onchange="onPageSizeChanged()">
+      <option value="5">5</option>
+      <option value="10" selected>10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+    </select>
+    <button class="btn" onclick="prevPage()">上一页</button>
+    <button class="btn" onclick="nextPage()">下一页</button>
+    <span id="pageInfo" class="page-info">第 1/1 页，共 0 条</span>
+  </span>
+</div>
+
+<table id="inventoryTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>名称</th>
+      <th>状态</th>
+      <th>分类</th>
+      <th>位置</th>
+      <th>保管人</th>
+      <th>品牌</th>
+      <th>型号</th>
+      <th>数量</th>
+      <th>资产编号</th>
+      <th>序列号</th>
+      <th>最近盘库登记人</th>
+      <th>最近盘库时间</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const API_BASE = '/api';
+let currentPage = 0;
+let totalPages = 1;
+
+const categoriesMap = new Map();
+const locationsMap = new Map();
+const keepersMap = new Map();
+
+function showMsg(text, ok = true) {
+  const el = document.getElementById('msg');
+  el.className = ok ? 'success' : 'error';
+  el.textContent = text;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4000);
+}
+
+async function fetchJson(url, options = {}) {
+  const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+  if (!resp.ok) {
+    const txt = await resp.text();
+    throw new Error(`HTTP ${resp.status}: ${txt}`);
+  }
+  const ct = resp.headers.get('content-type') || '';
+  if (ct.includes('application/json')) return resp.json();
+  return resp.text();
+}
+
+function toDateTimeLocal(dateStr) {
+  if (!dateStr) return '';
+  try { return new Date(dateStr).toLocaleString(); } catch(e) { return dateStr; }
+}
+
+// 操作日志缓存与查询（最近盘库）
+const latestOpCache = new Map(); // key: `${type}:${id}:${action}`
+async function fetchLatestOperationLog(entityType, entityId, action) {
+  const key = `${entityType}:${entityId}:${action || ''}`;
+  if (latestOpCache.has(key)) return latestOpCache.get(key);
+  try {
+    const params = new URLSearchParams();
+    params.set('entityType', entityType);
+    params.set('entityId', String(entityId));
+    if (action) params.set('action', action);
+    const log = await fetchJson(`${API_BASE}/operation-logs/latest?` + params.toString());
+    latestOpCache.set(key, log || null);
+    return log || null;
+  } catch (err) {
+    latestOpCache.set(key, null);
+    return null;
+  }
+}
+
+function onFilterChanged() {
+  currentPage = 0;
+  loadInventory();
+}
+
+function onPageSizeChanged() {
+  currentPage = 0;
+  loadInventory();
+}
+
+function prevPage() {
+  if (currentPage > 0) {
+    currentPage--;
+    loadInventory();
+  }
+}
+
+function nextPage() {
+  if (currentPage + 1 < totalPages) {
+    currentPage++;
+    loadInventory();
+  }
+}
+
+function onSearch() {
+  currentPage = 0;
+  loadInventory();
+}
+
+function clearFilter() {
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('filterCategoryId').value = '';
+  document.getElementById('filterLocationId').value = '';
+  document.getElementById('filterKeeperId').value = '';
+  document.getElementById('searchKeyword').value = '';
+  currentPage = 0;
+  loadInventory();
+}
+
+async function loadDictionaries() {
+  // 状态枚举（中文）
+  const statuses = ['', '在用', '闲置', '借用中', '维修中', '报废'];
+  const statusSel = document.getElementById('filterStatus');
+  statusSel.innerHTML = statuses.map(s => `<option value="${s}">${s ? s : '全部'}</option>`).join('');
+
+  // 分类
+  try {
+    const cats = await fetchJson(`${API_BASE}/equipment-categories`);
+    const catSel = document.getElementById('filterCategoryId');
+    catSel.innerHTML = `<option value="">全部</option>` + (cats || []).map(c => {
+      categoriesMap.set(c.id, c.name);
+      return `<option value="${c.id}">${c.name}</option>`;
+    }).join('');
+  } catch (err) {
+    showMsg('分类加载失败：' + err.message, false);
+  }
+
+  // 位置
+  try {
+    const locs = await fetchJson(`${API_BASE}/locations`);
+    const locSel = document.getElementById('filterLocationId');
+    locSel.innerHTML = `<option value="">全部</option>` + (locs || []).map(l => {
+      locationsMap.set(l.id, l.name);
+      return `<option value="${l.id}">${l.name}</option>`;
+    }).join('');
+  } catch (err) {
+    showMsg('位置加载失败：' + err.message, false);
+  }
+
+  // 保管人（管理员用户）
+  try {
+    const users = await fetchJson(`${API_BASE}/admin/users`);
+    const keeperSel = document.getElementById('filterKeeperId');
+    keeperSel.innerHTML = `<option value="">全部</option>` + (users || []).map(u => {
+      const name = u.displayName || u.username || u.id;
+      keepersMap.set(u.id, name);
+      return `<option value="${u.id}">${name}</option>`;
+    }).join('');
+  } catch (err) {
+    showMsg('保管人加载失败：' + err.message, false);
+  }
+}
+
+function buildQuery(page = 0, size = 10) {
+  const params = new URLSearchParams();
+  const status = document.getElementById('filterStatus').value;
+  const categoryId = document.getElementById('filterCategoryId').value;
+  const locationId = document.getElementById('filterLocationId').value;
+  const keeperId = document.getElementById('filterKeeperId').value;
+  const keyword = document.getElementById('searchKeyword').value.trim();
+  if (status) params.append('status', status);
+  if (categoryId) params.append('categoryId', categoryId);
+  if (locationId) params.append('locationId', locationId);
+  if (keeperId) params.append('keeperId', keeperId);
+  if (keyword) params.append('keyword', keyword);
+  params.append('page', page);
+  params.append('size', size);
+  return params.toString();
+}
+
+function buildFilterParams() {
+  // 与后端导出接口 /api/equipment/export 保持一致的筛选参数（不含分页）
+  const params = new URLSearchParams();
+  const status = document.getElementById('filterStatus').value;
+  const categoryId = document.getElementById('filterCategoryId').value;
+  const locationId = document.getElementById('filterLocationId').value;
+  const keeperId = document.getElementById('filterKeeperId').value;
+  const keyword = document.getElementById('searchKeyword').value.trim();
+  if (status) params.append('status', status);
+  if (categoryId) params.append('categoryId', categoryId);
+  if (locationId) params.append('locationId', locationId);
+  if (keeperId) params.append('keeperId', keeperId);
+  if (keyword) params.append('keyword', keyword);
+  return params.toString();
+}
+
+function exportCsv() {
+  try {
+    const params = buildFilterParams();
+    const url = `${API_BASE}/equipment/export` + (params ? `?${params}` : '');
+    // 直接在新窗口/标签页打开下载链接，后端已返回 Content-Disposition: attachment
+    window.open(url, '_blank');
+  } catch (err) {
+    showMsg('导出失败：' + err.message, false);
+  }
+}
+
+async function loadInventory() {
+  try {
+    const size = Number(document.getElementById('pageSize').value);
+    const q = buildQuery(currentPage, size);
+    const page = await fetchJson(`${API_BASE}/equipment/query?${q}`);
+    totalPages = page.totalPages ?? 1;
+    document.getElementById('pageInfo').textContent = `第 ${page.number + 1}/${totalPages} 页，共 ${page.totalElements} 条`;
+    await renderTable(page.content || []);
+  } catch (err) {
+    showMsg('设备列表加载失败：' + err.message, false);
+  }
+}
+
+async function renderTable(list) {
+  const tbody = document.querySelector('#inventoryTable tbody');
+  tbody.innerHTML = '';
+  for (const e of list) {
+    const tr = document.createElement('tr');
+    const categoryName = categoriesMap.get(e.categoryId) || '';
+    const locationName = locationsMap.get(e.locationId) || '';
+    const keeperName = keepersMap.get(e.keeperId) || '';
+    const statusBadge = renderStatusBadge(e.status);
+    const invLog = await fetchLatestOperationLog('Equipment', e.id, 'INVENTORY');
+    const actor = invLog && invLog.actor ? invLog.actor : '';
+    const time = invLog && invLog.createdAt ? toDateTimeLocal(invLog.createdAt) : '';
+    tr.innerHTML = `
+      <td>${e.id ?? ''}</td>
+      <td>${e.name ?? ''}</td>
+      <td>${statusBadge}</td>
+      <td>${categoryName}</td>
+      <td>${locationName}</td>
+      <td>${keeperName}</td>
+      <td>${e.brand ?? ''}</td>
+      <td>${e.model ?? ''}</td>
+      <td>${e.quantity ?? ''}</td>
+      <td>${e.assetNumber ?? ''}</td>
+      <td>${e.serialNumber ?? ''}</td>
+      <td>${actor}</td>
+      <td>${time}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function getStatusClass(s) {
+  switch (s) {
+    case '在用': return 'status-inuse';
+    case '闲置': return 'status-idle';
+    case '借用中': return 'status-loan';
+    case '维修中': return 'status-repair';
+    case '报废': return 'status-scrap';
+    default: return '';
+  }
+}
+
+function renderStatusBadge(s) {
+  const cls = getStatusClass(s);
+  const text = s || '';
+  return `<span class="badge ${cls}">${text}</span>`;
+}
+
+function reloadAll() {
+  loadInventory();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadDictionaries();
+  loadInventory();
+});
+</script>
+</body>
+</html>

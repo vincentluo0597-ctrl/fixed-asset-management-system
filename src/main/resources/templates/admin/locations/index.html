@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>位置管理 - 资产管理后台</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
+        header { background: #1677ff; color: #fff; padding: 14px 20px; }
+        header h1 { margin:0; font-size: 18px; }
+        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
+        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
+        main { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; }
+        ul.tree { list-style: none; padding-left: 16px; }
+        ul.tree li { margin: 4px 0; }
+        .node { cursor: pointer; }
+        .node small { color: #888; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display:block; font-size: 12px; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box; }
+        textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box; min-height: 80px; }
+        button { padding: 8px 12px; background: #1677ff; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        button.secondary { background: #555; }
+        button.danger { background: #ff4d4f; }
+    </style>
+    <script>
+        let selectedLocation = null;
+        let locationsById = {};
+
+        async function loadTree() {
+            const res = await fetch('/api/locations/tree');
+            const roots = await res.json();
+            // 构建 ID 索引
+            locationsById = {};
+            const indexAll = (list) => list.forEach(l => { locationsById[l.id] = l; if (l.children) indexAll(l.children); });
+            indexAll(roots);
+            // 渲染树
+            const container = document.getElementById('tree');
+            container.innerHTML = '';
+            roots.forEach(r => container.appendChild(renderNode(r)));
+            // 填充父位置下拉
+            fillParentSelect();
+        }
+
+        function renderNode(loc) {
+            const li = document.createElement('li');
+            const level = (loc.level ?? 0);
+            li.innerHTML = `<span class='node' onclick='selectLocation(${loc.id})'>${loc.name} <small>(类型: ${loc.type ?? ''}, 等级: ${level})</small></span>`;
+            if (loc.children && loc.children.length) {
+                const ul = document.createElement('ul');
+                ul.className = 'tree';
+                loc.children.forEach(ch => ul.appendChild(renderNode(ch)));
+                li.appendChild(ul);
+            }
+            return li;
+        }
+
+        function selectLocation(id) {
+            selectedLocation = locationsById[id];
+            document.getElementById('form-title').textContent = '编辑位置';
+            document.getElementById('name').value = selectedLocation.name ?? '';
+            document.getElementById('type').value = selectedLocation.type ?? '';
+            document.getElementById('managerId').value = selectedLocation.managerId ?? '';
+            document.getElementById('parentId').value = selectedLocation.parentId ?? '';
+            document.getElementById('level').value = selectedLocation.level ?? 0;
+            document.getElementById('btn-delete').disabled = false;
+        }
+
+        function fillParentSelect() {
+            const select = document.getElementById('parentId');
+            const old = select.value;
+            select.innerHTML = '<option value="">-- 无（根） --</option>';
+            Object.values(locationsById).forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.id;
+                const level = l.level ?? 0;
+                opt.textContent = `${' '.repeat(level * 2)}${l.name}`;
+                select.appendChild(opt);
+            });
+            select.value = old;
+        }
+
+        function openCreateForm() {
+            selectedLocation = null;
+            document.getElementById('form-title').textContent = '新增位置';
+            document.getElementById('name').value = '';
+            document.getElementById('type').value = '';
+            document.getElementById('managerId').value = '';
+            document.getElementById('parentId').value = '';
+            document.getElementById('level').value = 0;
+            document.getElementById('btn-delete').disabled = true;
+        }
+
+        function onParentChange() {
+            const parentIdVal = document.getElementById('parentId').value;
+            if (!parentIdVal) {
+                document.getElementById('level').value = 0;
+            } else {
+                const p = locationsById[Number(parentIdVal)];
+                const level = (p && p.level != null) ? (p.level + 1) : 1;
+                document.getElementById('level').value = level;
+            }
+        }
+
+        async function saveLocation() {
+            const payload = {
+                name: document.getElementById('name').value.trim(),
+                type: document.getElementById('type').value,
+                managerId: (document.getElementById('managerId').value.trim() || null) ? Number(document.getElementById('managerId').value.trim()) : null,
+                parentId: (document.getElementById('parentId').value || null) ? Number(document.getElementById('parentId').value) : null,
+                level: (document.getElementById('level').value || null) ? Number(document.getElementById('level').value) : null
+            };
+            if (!payload.name) { alert('位置名称不能为空'); return; }
+            if (!payload.type) { alert('位置类型不能为空'); return; }
+            const headers = { 'Content-Type': 'application/json' };
+            let res;
+            if (selectedLocation && selectedLocation.id) {
+                res = await fetch(`/api/locations/${selectedLocation.id}`, { method: 'PUT', headers, body: JSON.stringify(payload) });
+            } else {
+                res = await fetch('/api/locations', { method: 'POST', headers, body: JSON.stringify(payload) });
+            }
+            if (!res.ok) {
+                const text = await res.text();
+                alert('保存失败：' + text);
+            } else {
+                alert('保存成功');
+                openCreateForm();
+                loadTree();
+            }
+        }
+
+        async function deleteLocation() {
+            if (!selectedLocation || !selectedLocation.id) return;
+            if (!confirm('确认删除该位置？（必须无子节点）')) return;
+            const res = await fetch(`/api/locations/${selectedLocation.id}`, { method: 'DELETE' });
+            if (!res.ok) {
+                const text = await res.text();
+                alert('删除失败：' + text);
+            } else {
+                alert('删除成功');
+                openCreateForm();
+                loadTree();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            openCreateForm();
+            loadTree();
+            document.getElementById('parentId').addEventListener('change', onParentChange);
+        });
+    </script>
+</head>
+<body>
+<header>
+    <h1>资产管理后台</h1>
+    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
+    <div style="clear:both"></div>
+    </header>
+<nav>
+    <a href="/admin">仪表盘</a>
+    <a href="/admin/suppliers">供应商管理</a>
+    <a href="/admin/categories">设备分类管理</a>
+    <a href="/admin/equipment">设备管理</a>
+    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
+    </nav>
+<main>
+    <div class="card">
+        <h3>位置树</h3>
+        <ul class="tree" id="tree"></ul>
+    </div>
+    <div class="card">
+        <h3 id="form-title">新增位置</h3>
+        <div class="form-grid">
+            <div>
+                <label>名称</label>
+                <input id="name" placeholder="位置名称">
+            </div>
+            <div>
+                <label>类型</label>
+                <select id="type">
+                    <option value="">-- 请选择 --</option>
+                    <option value="教室">教室</option>
+                    <option value="办公室">办公室</option>
+                    <option value="实验室">实验室</option>
+                    <option value="仓库">仓库</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div>
+                <label>负责人ID（可选）</label>
+                <input id="managerId" type="number" placeholder="管理员用户ID">
+            </div>
+            <div>
+                <label>父位置（可选）</label>
+                <select id="parentId"></select>
+            </div>
+            <div>
+                <label>层级（自动计算）</label>
+                <input id="level" type="number" readonly>
+            </div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+            <button onclick="saveLocation()">保存</button>
+            <button class="secondary" onclick="openCreateForm()">重置</button>
+            <button id="btn-delete" class="danger" onclick="deleteLocation()" disabled>删除</button>
+        </div>
+    </div>
+    </main>
+</body>
+</html>

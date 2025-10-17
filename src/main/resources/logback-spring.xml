@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 读取 Spring Boot 配置的 logging.file.name，若不存在则回退到 logs/spring.log -->
+    <springProperty scope="context" name="APP_LOG_FILE" source="logging.file.name"/>
+    <property name="LOG_FILE" value="${APP_LOG_FILE:-logs/spring.log}"/>
+
+    <!-- 控制台输出（便于开发调试） -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 文件滚动策略：按天 + 按大小，自动压缩与清理历史 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+
+        <!-- SizeAndTimeBasedRollingPolicy 结合“日期 + 索引 + 大小”进行滚动，适合长期运行的服务 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 按天创建目录文件并按索引拆分，自动 gzip 压缩 -->
+            <fileNamePattern>logs/spring-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 单个文件最大 50MB 超出则滚动到下一个索引文件 -->
+            <maxFileSize>50MB</maxFileSize>
+            <!-- 保留最近 30 天的历史文件 -->
+            <maxHistory>30</maxHistory>
+            <!-- 历史文件总体积上限 2GB，超出则最旧文件被清理 -->
+            <totalSizeCap>2GB</totalSizeCap>
+            <!-- 服务重启时按策略清理历史（可选） -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 根日志级别：INFO。具体包级别的细粒度设置仍可通过 application.properties 的 logging.level.* 生效 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>设备管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<nav class="admin-nav">
+    <div class="nav-brand">设备管理系统</div>
+    <div class="nav-links">
+        <a href="/admin">管理首页</a>
+        <a href="/admin/users">用户管理</a>
+        <a href="/admin/equipment">设备管理</a>
+        <a href="/admin/transfers">设备调用</a>
+        <a href="/admin/locations">位置管理</a>
+        <a href="/admin/categories">分类管理</a>
+        <a href="/admin/suppliers">供应商管理</a>
+    </div>
+</nav>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>设备管理</h1>
+        <button class="btn btn-primary" onclick="reloadAll()">
+            <span class="icon">↻</span> 刷新数据
+        </button>
+    </div>
+
+    <div id="msg" class="alert hidden"></div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>设备列表</h2>
+            <div class="card-actions">
+                <button class="btn btn-secondary" onclick="exportCsv()">
+                    <span class="icon">📊</span> 导出 CSV
+                </button>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>状态筛选</label>
+                <select id="filterStatus" class="form-select" onchange="onFilterChanged()"></select>
+            </div>
+            
+            <div class="filter-group">
+                <label>分类筛选</label>
+                <select id="filterCategoryId" class="form-select" onchange="onFilterChanged()"></select>
+            </div>
+            
+            <div class="filter-group">
+                <label>搜索</label>
+                <div class="search-input">
+                    <input id="searchKeyword" type="text" placeholder="名称/型号/品牌/序列号/资产编号" />
+                    <button class="btn btn-sm" onclick="onSearch()">搜索</button>
+                    <button class="btn btn-sm btn-secondary" onclick="clearFilter()">清空</button>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="equipmentTable" class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>状态</th>
+                        <th>品牌</th>
+                        <th>型号</th>
+                        <th>数量</th>
+                        <th>分类</th>
+                        <th>供应商</th>
+                        <th>位置</th>
+                        <th>保管人</th>
+                        <th>采购日期</th>
+                        <th>最近操作</th>
+                        <th>操作时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="pagination-bar">
+            <div class="pagination-info">
+                <span id="pageInfo">第 1/1 页，共 0 条</span>
+            </div>
+            <div class="pagination-controls">
+                <div class="page-size">
+                    <label>每页显示</label>
+                    <select id="pageSize" onchange="onPageSizeChanged()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="pagination-buttons">
+                    <button class="btn btn-sm" onclick="prevPage()">上一页</button>
+                    <button class="btn btn-sm" onclick="nextPage()">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="card">
+            <div class="card-header">
+                <h2>新增设备</h2>
+            </div>
+            <div class="card-body">
+                <form id="createForm" onsubmit="return submitCreate(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="required">设备名称</label>
+                            <input type="text" id="name" required placeholder="请输入设备名称">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">设备状态</label>
+                            <select id="status" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>设备分类</label>
+                            <select id="categoryId"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>供应商</label>
+                            <select id="supplierId"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>品牌</label>
+                            <input type="text" id="brand" placeholder="可选">
+                        </div>
+                        <div class="form-group">
+                            <label>型号</label>
+                            <input type="text" id="model" placeholder="可选">
+                        </div>
+                        <div class="form-group">
+                            <label>数量</label>
+                            <input type="number" id="quantity" min="0" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>存放位置</label>
+                            <select id="locationId"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>保管人</label>
+                            <select id="keeperId"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>采购日期</label>
+                            <input type="date" id="purchaseDate">
+                        </div>
+                        <div class="form-group">
+                            <label>备注</label>
+                            <input type="text" id="remarks" placeholder="可选">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">添加设备</button>
+                        <button type="reset" class="btn btn-secondary">重置</button>
+                    </div>
+                </form>
+                <div id="createMsg" class="alert hidden"></div>
+            </div>
+        </div>
+
+<h3 style="margin-top:16px;">最近盘库记录（Top 10）</h3>
+<div id="recentInvMsg" class="hidden"></div>
+<table id="recentInventoryTable" style="margin-top:8px;">
+  <thead>
+    <tr>
+      <th>记录ID</th>
+      <th>创建时间</th>
+      <th>来源</th>
+      <th>备注</th>
+      <th>调整后数量</th>
+      <th>调整原因</th>
+      <th>登记人</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+  <caption style="caption-side: bottom; text-align:left; font-size:12px; color:#666;">说明：登记盘库后将自动刷新该列表；登记人来源于针对 InventoryRecord 的 CREATE 操作日志。</caption>
+</table>
+
+<h2 style="margin-top:24px;">编辑设备</h2>
+<form id="editForm" onsubmit="return submitUpdate(event)">
+  <div class="form-grid">
+    <div class="form-item">
+      <label>设备ID</label>
+      <input type="number" id="editId" readonly placeholder="选择一行或点击“编辑”按钮">
+    </div>
+    <div class="form-item">
+      <label>名称（必填）</label>
+      <input type="text" id="editName" required>
+    </div>
+    <div class="form-item">
+      <label>状态（必填）</label>
+      <select id="editStatus" required></select>
+    </div>
+    <div class="form-item">
+      <label>分类</label>
+      <select id="editCategoryId"></select>
+    </div>
+        <div class="form-item">
+          <label>供应商ID</label>
+          <select id="editSupplierId"></select>
+        </div>
+    <div class="form-item">
+      <label>品牌</label>
+      <input type="text" id="editBrand">
+    </div>
+    <div class="form-item">
+      <label>型号</label>
+      <input type="text" id="editModel">
+    </div>
+    <div class="form-item">
+      <label>数量</label>
+      <input type="number" id="editQuantity" min="0" placeholder="不填则保持原值">
+    </div>
+        <div class="form-item">
+          <label>位置ID</label>
+          <select id="editLocationId"></select>
+        </div>
+        <div class="form-item">
+          <label>保管人ID</label>
+          <select id="editKeeperId"></select>
+        </div>
+    <div class="form-item">
+      <label>采购日期</label>
+      <input type="date" id="editPurchaseDate">
+    </div>
+    <div class="form-item">
+      <label>备注</label>
+      <input type="text" id="editRemarks">
+    </div>
+  </div>
+  <div class="actions">
+    <button type="submit">保存更新</button>
+    <button type="button" class="danger" onclick="confirmDelete()">删除该设备</button>
+  </div>
+  <div id="editMsg" class="hidden"></div>
+  <div style="margin-top:8px; font-size:12px; color:#888;">更新接口：PUT /api/equipment/{id}（EquipmentDTO）；删除接口：DELETE /api/equipment/{id}</div>
+</form>
+
+<script>
+const API_BASE = '/api';
+// 缓存字典，用于在表格中通过ID显示名称
+const categoriesMap = new Map();
+const suppliersMap = new Map();
+const locationsMap = new Map();
+const keepersMap = new Map();
+
+function showMsg(text, ok = true) {
+  const el = document.getElementById('msg');
+  el.className = ok ? 'success' : 'error';
+  el.textContent = text;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4000);
+}
+
+function setCreateMsg(text, ok = true) {
+  const el = document.getElementById('createMsg');
+  el.className = ok ? 'success' : 'error';
+  el.textContent = text;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 5000);
+}
+
+async function fetchJson(url, options = {}) {
+  const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+  if (!resp.ok) {
+    const txt = await resp.text();
+    throw new Error(`HTTP ${resp.status}: ${txt}`);
+  }
+  const ct = resp.headers.get('content-type') || '';
+  if (ct.includes('application/json')) return resp.json();
+  return resp.text();
+}
+
+function toDateTimeLocal(dateStr) {
+  if (!dateStr) return '';
+  try { return new Date(dateStr).toLocaleString(); } catch(e) { return dateStr; }
+}
+
+// 操作日志缓存与查询（设备最近操作人/时间）
+const latestOpCache = new Map(); // key: `${type}:${id}:${action||''}`
+async function fetchLatestOperationLog(entityType, entityId, action) {
+  const key = `${entityType}:${entityId}:${action || ''}`;
+  if (latestOpCache.has(key)) return latestOpCache.get(key);
+  try {
+    const params = new URLSearchParams();
+    params.set('entityType', entityType);
+    params.set('entityId', String(entityId));
+    if (action) params.set('action', action);
+    const log = await fetchJson(`${API_BASE}/operation-logs/latest?` + params.toString());
+    latestOpCache.set(key, log || null);
+    return log || null;
+  } catch (err) {
+    latestOpCache.set(key, null);
+    return null;
+  }
+}
+
+async function renderEquipmentTable(list) {
+  const tbody = document.querySelector('#equipmentTable tbody');
+  tbody.innerHTML = '';
+  for (const e of list) {
+    const tr = document.createElement('tr');
+    const categoryName = categoriesMap.get(e.categoryId) || e.categoryId || '';
+    const supplierName = suppliersMap.get(e.supplierId) || e.supplierId || '';
+    const locationName = locationsMap.get(e.locationId) || e.locationId || '';
+    const keeperName = keepersMap.get(e.keeperId) || e.keeperId || '';
+    const latestLog = await fetchLatestOperationLog('Equipment', e.id, null);
+    const latestActor = latestLog && latestLog.actor ? latestLog.actor : '';
+    const latestTime = latestLog && latestLog.createdAt ? toDateTimeLocal(latestLog.createdAt) : '';
+    tr.innerHTML = `
+      <td>${e.id ?? ''}</td>
+      <td>${e.name ?? ''}</td>
+      <td>${e.status ?? ''}</td>
+      <td>${e.brand ?? ''}</td>
+      <td>${e.model ?? ''}</td>
+      <td>${e.quantity ?? ''}</td>
+      <td>${categoryName}</td>
+      <td>${supplierName}</td>
+      <td>${locationName}</td>
+      <td>${keeperName}</td>
+      <td>${e.purchaseDate ?? ''}</td>
+      <td>${latestActor}</td>
+      <td>${latestTime}</td>
+      <td>
+        <button onclick="invokeEquipment(${encodeId(e.id)})">调用</button>
+        <button onclick="setEditForm(${encodeId(e.id)})">编辑</button>
+        <button onclick="createInventoryRecord(${encodeId(e.id)})">登记盘库</button>
+        <button class="danger" onclick="deleteEquipment(${encodeId(e.id)})">删除</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+let currentPage = 0;
+let pageSize = 10;
+let totalPages = 0;
+let totalElements = 0;
+const filters = { status: null, categoryId: null, keyword: null, supplierId: null, locationId: null, keeperId: null };
+
+function updatePageInfo() {
+  const info = document.getElementById('pageInfo');
+  info.textContent = `第 ${Math.min(currentPage + 1, Math.max(totalPages, 1))}/${Math.max(totalPages, 1)} 页，共 ${totalElements} 条`;
+}
+
+async function loadEquipment() {
+  // 使用 /api/equipment/query 进行分页与筛选
+  try {
+    const params = new URLSearchParams();
+    params.set('page', String(currentPage));
+    params.set('size', String(pageSize));
+    if (filters.status) params.set('status', filters.status);
+    if (filters.categoryId) params.set('categoryId', String(filters.categoryId));
+    if (filters.keyword && filters.keyword.trim() !== '') params.set('keyword', filters.keyword.trim());
+    if (filters.supplierId) params.set('supplierId', String(filters.supplierId));
+    if (filters.locationId) params.set('locationId', String(filters.locationId));
+    if (filters.keeperId) params.set('keeperId', String(filters.keeperId));
+    const page = await fetchJson(`${API_BASE}/equipment/query?` + params.toString());
+    const list = page.content || [];
+    totalPages = page.totalPages ?? 1;
+    totalElements = page.totalElements ?? list.length;
+    await renderEquipmentTable(list);
+    updatePageInfo();
+    showMsg(`已加载设备 ${list.length} 条（当前页）`);
+  } catch (err) {
+    console.error(err);
+    showMsg(`加载设备失败：${err.message}`, false);
+  }
+}
+
+async function loadCategories() {
+  const sel = document.getElementById('categoryId');
+  sel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list = await fetchJson(`${API_BASE}/equipment-categories`);
+    list.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.name} (ID=${c.id})`;
+      sel.appendChild(opt);
+      categoriesMap.set(c.id, c.name);
+    });
+  } catch (err) {
+    console.warn('分类加载失败：', err);
+  }
+  // 同步编辑表单的分类下拉
+  const editSel = document.getElementById('editCategoryId');
+  const cacheVal = editSel.value;
+  editSel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list2 = await fetchJson(`${API_BASE}/equipment-categories`);
+    list2.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.name} (ID=${c.id})`;
+      editSel.appendChild(opt);
+      categoriesMap.set(c.id, c.name);
+    });
+    editSel.value = cacheVal;
+  } catch (err) {
+    console.warn('编辑表单分类下拉加载失败：', err);
+  }
+  // 同步筛选下拉
+  const filterSel = document.getElementById('filterCategoryId');
+  const cacheFilterVal = filterSel.value;
+  filterSel.innerHTML = '<option value="">（全部）</option>';
+  categoriesMap.forEach((name, id) => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = name + ` (ID=${id})`;
+    filterSel.appendChild(opt);
+  });
+  filterSel.value = cacheFilterVal || '';
+}
+
+async function loadSuppliers() {
+  const sel = document.getElementById('supplierId');
+  sel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list = await fetchJson(`${API_BASE}/suppliers`);
+    list.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = `${s.name} (ID=${s.id})`;
+      sel.appendChild(opt);
+      suppliersMap.set(s.id, s.name);
+    });
+  } catch (err) {
+    console.warn('供应商加载失败：', err);
+  }
+  const editSel = document.getElementById('editSupplierId');
+  const cacheVal = editSel.value;
+  editSel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list2 = await fetchJson(`${API_BASE}/suppliers`);
+    list2.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = `${s.name} (ID=${s.id})`;
+      editSel.appendChild(opt);
+      suppliersMap.set(s.id, s.name);
+    });
+    editSel.value = cacheVal;
+  } catch (err) {
+    console.warn('编辑表单供应商下拉加载失败：', err);
+  }
+}
+
+async function loadLocations() {
+  const sel = document.getElementById('locationId');
+  sel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list = await fetchJson(`${API_BASE}/locations`);
+    list.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l.id;
+      opt.textContent = `${l.name} (ID=${l.id})`;
+      sel.appendChild(opt);
+      locationsMap.set(l.id, l.name);
+    });
+  } catch (err) {
+    console.warn('位置加载失败：', err);
+  }
+  const editSel = document.getElementById('editLocationId');
+  const cacheVal = editSel.value;
+  editSel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list2 = await fetchJson(`${API_BASE}/locations`);
+    list2.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l.id;
+      opt.textContent = `${l.name} (ID=${l.id})`;
+      editSel.appendChild(opt);
+      locationsMap.set(l.id, l.name);
+    });
+    editSel.value = cacheVal;
+  } catch (err) {
+    console.warn('编辑表单位置下拉加载失败：', err);
+  }
+}
+
+async function loadKeepers() {
+  const sel = document.getElementById('keeperId');
+  sel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list = await fetchJson(`${API_BASE}/admin/users`);
+    list.forEach(u => {
+      const name = u.displayName || u.username || `用户${u.id}`;
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = `${name} (ID=${u.id})`;
+      sel.appendChild(opt);
+      keepersMap.set(u.id, name);
+    });
+  } catch (err) {
+    console.warn('保管人加载失败：', err);
+  }
+  const editSel = document.getElementById('editKeeperId');
+  const cacheVal = editSel.value;
+  editSel.innerHTML = '<option value="">（未选择）</option>';
+  try {
+    const list2 = await fetchJson(`${API_BASE}/admin/users`);
+    list2.forEach(u => {
+      const name = u.displayName || u.username || `用户${u.id}`;
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = `${name} (ID=${u.id})`;
+      editSel.appendChild(opt);
+      keepersMap.set(u.id, name);
+    });
+    editSel.value = cacheVal;
+  } catch (err) {
+    console.warn('编辑表单保管人下拉加载失败：', err);
+  }
+}
+
+function initStatusOptions() {
+  const statuses = ['在用','闲置','借用中','维修中','报废'];
+  const sel = document.getElementById('status');
+  statuses.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    sel.appendChild(opt);
+  });
+  const editSel = document.getElementById('editStatus');
+  statuses.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    editSel.appendChild(opt);
+  });
+  // 过滤下拉
+  const filterSel = document.getElementById('filterStatus');
+  filterSel.innerHTML = '<option value="">（全部）</option>';
+  statuses.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    filterSel.appendChild(opt);
+  });
+}
+
+async function submitCreate(ev) {
+  ev.preventDefault();
+  const payload = {
+    name: document.getElementById('name').value.trim(),
+    status: document.getElementById('status').value,
+    categoryId: parseNullableInt(document.getElementById('categoryId').value),
+    supplierId: parseNullableInt(document.getElementById('supplierId').value),
+    brand: nullIfEmpty(document.getElementById('brand').value),
+    model: nullIfEmpty(document.getElementById('model').value),
+    quantity: (function(){ const v = parseNullableInt(document.getElementById('quantity').value); return v != null ? v : 1; })(),
+    locationId: parseNullableInt(document.getElementById('locationId').value),
+    keeperId: parseNullableInt(document.getElementById('keeperId').value),
+    purchaseDate: nullIfEmpty(document.getElementById('purchaseDate').value),
+    remarks: nullIfEmpty(document.getElementById('remarks').value)
+  };
+  try {
+    const created = await fetchJson(`${API_BASE}/equipment`, { method: 'POST', body: JSON.stringify(payload) });
+    setCreateMsg(`新增成功，ID=${created.id}`);
+    document.getElementById('createForm').reset();
+    await loadEquipment();
+  } catch (err) {
+    console.error(err);
+    setCreateMsg(`新增失败：${err.message}`, false);
+  }
+}
+
+function setEditFormByData(e) {
+  document.getElementById('editId').value = e.id ?? '';
+  document.getElementById('editName').value = e.name ?? '';
+  document.getElementById('editStatus').value = e.status ?? '';
+  document.getElementById('editCategoryId').value = e.categoryId ?? '';
+  document.getElementById('editSupplierId').value = e.supplierId ?? '';
+  document.getElementById('editBrand').value = e.brand ?? '';
+  document.getElementById('editModel').value = e.model ?? '';
+  document.getElementById('editQuantity').value = (typeof e.quantity === 'number') ? e.quantity : '';
+  document.getElementById('editLocationId').value = e.locationId ?? '';
+  document.getElementById('editKeeperId').value = e.keeperId ?? '';
+  document.getElementById('editPurchaseDate').value = e.purchaseDate ?? '';
+  document.getElementById('editRemarks').value = e.remarks ?? '';
+}
+
+function encodeId(id) { return typeof id === 'number' ? id : (id ?? ''); }
+
+async function setEditForm(id) {
+  if (!id) { setEditMsg('请先选择有效的设备ID', false); return; }
+  try {
+    const e = await fetchJson(`${API_BASE}/equipment/${id}`);
+    setEditFormByData(e);
+    setEditMsg('已载入设备数据，可编辑后保存');
+    // 加载最近盘库记录
+    await loadRecentInventoryRecords(e.id);
+  } catch (err) {
+    console.error(err);
+    setEditMsg(`载入设备失败：${err.message}`, false);
+  }
+}
+
+function setEditMsg(text, ok = true) {
+  const el = document.getElementById('editMsg');
+  el.className = ok ? 'success' : 'error';
+  el.textContent = text;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 5000);
+}
+
+async function submitUpdate(ev) {
+  ev.preventDefault();
+  const id = parseNullableInt(document.getElementById('editId').value);
+  if (!id) { setEditMsg('缺少设备ID，请先在列表点击“编辑”加载数据', false); return; }
+  const payload = {
+    name: document.getElementById('editName').value.trim(),
+    status: document.getElementById('editStatus').value,
+    categoryId: parseNullableInt(document.getElementById('editCategoryId').value),
+    supplierId: parseNullableInt(document.getElementById('editSupplierId').value),
+    brand: nullIfEmpty(document.getElementById('editBrand').value),
+    model: nullIfEmpty(document.getElementById('editModel').value),
+    quantity: parseNullableInt(document.getElementById('editQuantity').value),
+    locationId: parseNullableInt(document.getElementById('editLocationId').value),
+    keeperId: parseNullableInt(document.getElementById('editKeeperId').value),
+    purchaseDate: nullIfEmpty(document.getElementById('editPurchaseDate').value),
+    remarks: nullIfEmpty(document.getElementById('editRemarks').value)
+  };
+  try {
+    const updated = await fetchJson(`${API_BASE}/equipment/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    setEditMsg(`更新成功，ID=${updated.id}`);
+    await loadEquipment();
+  } catch (err) {
+    console.error(err);
+    setEditMsg(`更新失败：${err.message}`, false);
+  }
+}
+
+async function deleteEquipment(id) {
+  if (!id) { setEditMsg('缺少设备ID', false); return; }
+  if (!confirm('确认删除该设备？')) return;
+  try {
+    const resp = await fetch(`${API_BASE}/equipment/${id}`, { method: 'DELETE' });
+    if (!resp.ok) throw new Error(await resp.text());
+    setEditMsg('删除成功');
+    await loadEquipment();
+  } catch (err) {
+    console.error(err);
+    setEditMsg(`删除失败：${err.message}`, false);
+  }
+}
+
+async function filterByStatus() {
+  const s = document.getElementById('filterStatus').value;
+  filters.status = s || null;
+  currentPage = 0;
+  await loadEquipment();
+}
+
+async function clearFilter() {
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('filterCategoryId').value = '';
+  document.getElementById('searchKeyword').value = '';
+  filters.status = null;
+  filters.categoryId = null;
+  filters.keyword = null;
+  filters.supplierId = null;
+  filters.locationId = null;
+  filters.keeperId = null;
+  currentPage = 0;
+  await loadEquipment();
+}
+
+function parseNullableInt(val) {
+  if (!val || val === '') return null;
+  const n = parseInt(val, 10);
+  return isNaN(n) ? null : n;
+}
+
+function nullIfEmpty(val) {
+  return val && val.trim() !== '' ? val.trim() : null;
+}
+
+async function reloadAll() {
+  // 先加载各下拉与名称映射，再加载设备列表，确保表格能显示名称而不是ID
+  await Promise.all([loadCategories(), loadSuppliers(), loadLocations(), loadKeepers()]);
+  await loadEquipment();
+}
+
+function onFilterChanged() {
+  const catVal = document.getElementById('filterCategoryId').value;
+  filters.categoryId = catVal ? parseNullableInt(catVal) : null;
+  const statusVal = document.getElementById('filterStatus').value;
+  filters.status = statusVal || null;
+  currentPage = 0;
+  loadEquipment();
+}
+
+function onSearch() {
+  const kw = document.getElementById('searchKeyword').value || '';
+  filters.keyword = kw.trim() !== '' ? kw.trim() : null;
+  currentPage = 0;
+  loadEquipment();
+}
+
+function onPageSizeChanged() {
+  pageSize = parseNullableInt(document.getElementById('pageSize').value) || 10;
+  currentPage = 0;
+  loadEquipment();
+}
+
+function nextPage() {
+  if (currentPage + 1 < totalPages) {
+    currentPage += 1;
+    loadEquipment();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 0) {
+    currentPage -= 1;
+    loadEquipment();
+  }
+}
+
+async function createInventoryRecord(equipmentId) {
+  if (!equipmentId) { showMsg('无效的设备ID，无法登记盘库', false); return; }
+  const source = prompt('盘库来源（例如：实盘/系统/抽查），可留空');
+  const note = prompt('盘库备注（可选，例如：数量核对，位置确认等）');
+  // 是否调整数量
+  const adjust = confirm('是否需要调整数量？\n选择“确定”表示本次盘库要调整数量');
+  let newQuantity = null;
+  let adjustReason = null;
+  if (adjust) {
+    const newQStr = prompt('请输入调整后的数量（非负整数）');
+    if (newQStr == null) { showMsg('已取消数量调整'); return; }
+    const parsed = parseInt(newQStr, 10);
+    if (isNaN(parsed) || parsed < 0) { showMsg('数量输入无效：请填写非负整数', false); return; }
+    newQuantity = parsed;
+    adjustReason = prompt('请输入数量变更原因（必填）');
+    if (!adjustReason || adjustReason.trim() === '') { showMsg('变更原因为必填项', false); return; }
+  }
+  const payload = {
+    source: source && source.trim() !== '' ? source.trim() : null,
+    note: note && note.trim() !== '' ? note.trim() : null,
+    adjustQuantity: adjust ? true : false,
+    newQuantity: newQuantity,
+    adjustReason: adjustReason && adjustReason.trim() !== '' ? adjustReason.trim() : null
+  };
+  try {
+    const created = await fetchJson(`${API_BASE}/inventory-records/${equipmentId}`, { method: 'POST', body: JSON.stringify(payload) });
+    showMsg(`盘库登记成功：记录ID=${created.id}`);
+    // 刷新最近盘库列表 & 刷新设备表格（以便数量变化立即可见）
+    await loadRecentInventoryRecords(equipmentId);
+    await loadEquipment();
+  } catch (err) {
+    console.error(err);
+    showMsg('盘库登记失败：' + err.message, false);
+  }
+}
+
+// 加载并渲染最近盘库记录（默认 Top 10）
+async function loadRecentInventoryRecords(equipmentId) {
+  const tbody = document.querySelector('#recentInventoryTable tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#666;">加载中...</td></tr>';
+  try {
+    const params = new URLSearchParams();
+    params.set('equipmentId', String(equipmentId));
+    params.set('limit', '10');
+    const list = await fetchJson(`${API_BASE}/inventory-records?` + params.toString());
+    await renderRecentInventoryTable(list || []);
+    const el = document.getElementById('recentInvMsg');
+    el.className = 'success';
+    el.textContent = `已加载最近盘库记录 ${list.length} 条`;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 3000);
+  } catch (err) {
+    console.error(err);
+    const el = document.getElementById('recentInvMsg');
+    el.className = 'error';
+    el.textContent = '加载最近盘库记录失败：' + err.message;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 5000);
+  }
+}
+
+async function renderRecentInventoryTable(records) {
+  const tbody = document.querySelector('#recentInventoryTable tbody');
+  tbody.innerHTML = '';
+  if (!records || records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#999;">暂无盘库记录</td></tr>';
+    return;
+  }
+  // 并行获取每条记录的创建操作者
+  const actorPromises = records.map(r => fetchLatestOperationLog('InventoryRecord', r.id, 'CREATE'));
+  const logs = await Promise.all(actorPromises);
+  for (let i = 0; i < records.length; i++) {
+    const r = records[i];
+    const log = logs[i];
+    const actor = log && log.actor ? log.actor : '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.id ?? ''}</td>
+      <td>${r.createdAt ? toDateTimeLocal(r.createdAt) : ''}</td>
+      <td>${r.source ?? ''}</td>
+      <td>${r.note ?? ''}</td>
+      <td>${typeof r.adjustAfterQuantity === 'number' ? r.adjustAfterQuantity : ''}</td>
+      <td>${r.adjustReason ?? ''}</td>
+      <td>${actor}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+async function invokeEquipment(equipmentId) {
+  if (!equipmentId) { showMsg('无效的设备ID，无法调用', false); return; }
+  
+  // Check if equipment is available for transfer
+  try {
+    const equipment = await fetchJson(`${API_BASE}/equipment/${equipmentId}`);
+    if (equipment.status === '借用中' || equipment.status === '维修中' || equipment.status === '报废') {
+      showMsg(`设备当前状态为"${equipment.status}"，无法调用`, false);
+      return;
+    }
+    
+    // Redirect to transfer creation page with pre-filled equipment
+    window.location.href = `/admin/transfers?equipmentId=${equipmentId}`;
+  } catch (err) {
+    console.error(err);
+    showMsg(`检查设备状态失败：${err.message}`, false);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initStatusOptions();
+  reloadAll();
+});
+
+// 导出当前筛选条件下的设备列表为 CSV
+function exportCsv() {
+  try {
+    const params = new URLSearchParams();
+    if (filters.status) params.set('status', filters.status);
+    if (filters.categoryId) params.set('categoryId', String(filters.categoryId));
+    if (filters.keyword) params.set('keyword', filters.keyword);
+    if (filters.supplierId) params.set('supplierId', String(filters.supplierId));
+    if (filters.locationId) params.set('locationId', String(filters.locationId));
+    if (filters.keeperId) params.set('keeperId', String(filters.keeperId));
+    const url = `${API_BASE}/equipment/export?` + params.toString();
+    // 在新窗口打开以触发下载
+    window.open(url, '_blank');
+  } catch (err) {
+    console.error(err);
+    showMsg('导出失败：' + err.message, false);
+  }
+}
+</script>
+
+</body>
+</html>

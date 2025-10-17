@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资产管理后台</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
+        header { background: #1677ff; color: #fff; padding: 14px 20px; }
+        header h1 { margin:0; font-size: 18px; }
+        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
+        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
+        main { padding: 20px; }
+        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; margin-bottom: 14px; }
+        .danger { color: #ff4d4f; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>资产管理后台</h1>
+    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
+</header>
+<nav>
+    <a href="/admin">仪表盘</a>
+    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
+    <a href="/admin/users">用户管理</a>
+    <a href="/admin/equipment">设备管理</a>
+    <a href="/admin/transfers">设备调用</a>
+    <a href="/admin/locations">位置管理</a>
+    <a href="/admin/suppliers">供应商管理</a>
+    <a href="/admin/categories">设备分类管理</a>
+    <a href="/admin/maintenances">维修管理</a>
+    <a href="/admin/inventory">盘库（设备一览）</a>
+</nav>
+<main>
+    <div class="card">
+        <h2>系统状态</h2>
+        <p>端口：13697</p>
+        <p>数据库：MySQL（请在 Swagger UI 中使用接口进行管理操作）</p>
+    </div>
+    <div class="card">
+        <h2>下一步</h2>
+        <ul>
+            <li>完善供应商/设备分类/设备的管理页面（前端表格 + 表单）。</li>
+            <li>将用户登录改为数据库存储，并配置权限。</li>
+            <li>根据需要收紧 API 访问权限（目前开放，便于联调）。</li>
+        </ul>
+        <p class="danger">提示：当前为开发演示登录。生产环境请使用数据库用户与更严格的安全策略。</p>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备调用管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .card-header {
+            background: linear-gradient(90deg, #e9ecef 0%, #f7f7f9 100%);
+            font-weight: bold;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status-badge {
+            font-size: 0.85em;
+        }
+        .transfer-type-badge {
+            font-size: 0.8em;
+        }
+        .mandatory-field::after {
+            content: " *";
+            color: red;
+        }
+        .sidebar-logo {
+            display: block;
+            margin: 0 auto 12px;
+            max-width: 100%;
+            height: 48px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-2 sidebar">
+                <div class="p-3">
+                    <a href="/admin" class="d-block text-center mb-2" title="返回首页">
+                        <img src="/logo.jpg" alt="系统Logo" class="sidebar-logo">
+                    </a>
+                    <h5 class="text-center mb-4">设备管理系统</h5>
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item mb-2">
+                            <a class="nav-link" href="/admin/users">
+                                <i class="bi bi-people me-2"></i>用户管理
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link" href="/admin/equipment">
+                                <i class="bi bi-box me-2"></i>设备管理
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link active" href="/admin/transfers">
+                                <i class="bi bi-arrow-left-right me-2"></i>设备调用
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link" href="/admin/locations">
+                                <i class="bi bi-geo-alt me-2"></i>位置管理
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link" href="/admin/categories">
+                                <i class="bi bi-tags me-2"></i>分类管理
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link" href="/admin/suppliers">
+                                <i class="bi bi-truck me-2"></i>供应商管理
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="col-md-10 main-content">
+                <!-- 页面标题和统计信息 -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-arrow-left-right me-2"></i>设备调用管理</h2>
+                    <div class="d-flex gap-3">
+                        <span class="badge bg-primary">总调用: <span id="totalTransfers">0</span></span>
+                        <span class="badge bg-warning">进行中: <span id="activeTransfers">0</span></span>
+                        <span class="badge bg-danger">逾期: <span id="overdueTransfers">0</span></span>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <button class="btn btn-primary me-2" onclick="showCreateModal()">
+                            <i class="bi bi-plus-circle me-1"></i>新建调用
+                        </button>
+                        <button class="btn btn-outline-warning me-2" onclick="loadOverdueLoans()">
+                            <i class="bi bi-exclamation-triangle me-1"></i>查看逾期
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="loadStatistics()">
+                            <i class="bi bi-graph-up me-1"></i>刷新统计
+                        </button>
+                    </div>
+                    <div>
+                        <select class="form-select d-inline-block w-auto me-2" id="filterType" onchange="filterTransfers()">
+                            <option value="">所有类型</option>
+                            <option value="TRANSFER">调拨</option>
+                            <option value="LOAN">借出</option>
+                            <option value="RETURN">归还</option>
+                            <option value="MOVE">移动</option>
+                        </select>
+                        <select class="form-select d-inline-block w-auto" id="filterStatus" onchange="filterTransfers()">
+                            <option value="">所有状态</option>
+                            <option value="ACTIVE">进行中</option>
+                            <option value="COMPLETED">已完成</option>
+                            <option value="CANCELLED">已取消</option>
+                        </select>
+                        <div class="form-check form-switch d-inline-block ms-2 align-middle">
+                            <input class="form-check-input" type="checkbox" id="showMineSwitch">
+                            <label class="form-check-label" for="showMineSwitch">只看我的</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设备调用列表 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-list me-2"></i>设备调用记录
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>设备名称</th>
+                                        <th>调用类型</th>
+                                        <th>起始位置</th>
+                                        <th>目标位置</th>
+                                        <th>起始用户</th>
+                                        <th>目标用户</th>
+                                        <th>调用说明</th>
+                                        <th>调用日期</th>
+                                        <th>状态</th>
+                                        <th>调用人</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transferTableBody">
+                                    <tr>
+                                        <td colspan="12" class="text-center text-muted">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                            加载中...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- 分页 -->
+                        <nav aria-label="分页导航">
+                            <ul class="pagination justify-content-center" id="pagination">
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建设备调用模态框 -->
+    <div class="modal fade" id="createTransferModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>创建设备调用</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTransferForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label mandatory-field">设备</label>
+                                    <select class="form-select" id="equipmentId" required>
+                                        <option value="">请选择设备</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label mandatory-field">调用类型</label>
+                                    <select class="form-select" id="transferType" required onchange="onTransferTypeChange()">
+                                        <option value="">请选择类型</option>
+                                        <option value="TRANSFER">调拨</option>
+                                        <option value="LOAN">借出</option>
+                                        <option value="RETURN">归还</option>
+                                        <option value="MOVE">移动</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">起始位置</label>
+                                    <select class="form-select" id="fromLocationId">
+                                        <option value="">请选择起始位置</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">目标位置</label>
+                                    <select class="form-select" id="toLocationId">
+                                        <option value="">请选择目标位置</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">起始用户</label>
+                                    <select class="form-select" id="fromUserId">
+                                        <option value="">请选择起始用户</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">目标用户</label>
+                                    <select class="form-select" id="toUserId">
+                                        <option value="">请选择目标用户</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="expectedReturnDateRow" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">预期归还日期</label>
+                                    <input type="datetime-local" class="form-control" id="expectedReturnDate">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label mandatory-field">调用说明</label>
+                            <textarea class="form-control" id="transferReason" rows="3" required 
+                                      placeholder="请详细说明设备调用的原因和用途..."></textarea>
+                            <div class="form-text">调用说明为必填项，请详细填写设备调用的原因。</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="createTransfer()">创建调用</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentPage = 0;
+        let currentFilterType = '';
+        let currentFilterStatus = '';
+        let showMine = false;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSelectOptions();
+            // 初始化“只看我的”开关
+            const mineSwitch = document.getElementById('showMineSwitch');
+            if (mineSwitch) {
+                mineSwitch.addEventListener('change', (e) => {
+                    showMine = e.target.checked;
+                    loadTransfers();
+                });
+            }
+
+            loadTransfers();
+            loadStatistics();
+            
+            // Check if equipment ID is provided in URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const equipmentId = urlParams.get('equipmentId');
+            if (equipmentId) {
+                // Pre-select the equipment in the create modal
+                document.getElementById('equipmentId').value = equipmentId;
+                showCreateModal();
+            }
+        });
+        
+        // 加载设备调用列表
+        async function loadTransfers(page = 0) {
+            currentPage = page;
+            try {
+                const params = new URLSearchParams();
+                params.set('page', String(page));
+                params.set('size', '10');
+                if (currentFilterType) params.set('type', currentFilterType);
+                if (currentFilterStatus) params.set('status', currentFilterStatus);
+                const base = showMine ? '/api/equipment-transfers/my-transfers' : '/api/equipment-transfers/page';
+                const response = await fetch(`${base}?${params.toString()}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayTransfers(data.content);
+                    updatePagination(data.totalPages, data.number);
+                } else {
+                    showError('加载设备调用记录失败');
+                }
+            } catch (error) {
+                console.error('Error loading transfers:', error);
+                showError('加载设备调用记录失败');
+            }
+        }
+        
+        // 显示设备调用记录
+        function displayTransfers(transfers) {
+            const tbody = document.getElementById('transferTableBody');
+            
+            if (!transfers || transfers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted">暂无设备调用记录</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = transfers.map(transfer => `
+                <tr class="${isOverdue(transfer) ? 'table-danger' : ''}">
+                    <td>${transfer.id}</td>
+                    <td>${transfer.equipment ? transfer.equipment.name : '未知设备'}</td>
+                    <td>
+                        <span class="badge transfer-type-badge ${getTransferTypeClass(transfer.transferType)}">
+                            ${getTransferTypeName(transfer.transferType)}
+                        </span>
+                    </td>
+                    <td>${transfer.fromLocation ? transfer.fromLocation.name : '-'}</td>
+                    <td>${transfer.toLocation ? transfer.toLocation.name : '-'}</td>
+                    <td>${transfer.fromUser ? transfer.fromUser.displayName : '-'}</td>
+                    <td>${transfer.toUser ? transfer.toUser.displayName : '-'}</td>
+                    <td>
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" 
+                             title="${transfer.transferReason}">
+                            ${transfer.transferReason}
+                        </div>
+                    </td>
+                    <td>${formatDateTime(transfer.transferDate)}</td>
+                    <td>
+                        <span class="badge status-badge ${getStatusClass(transfer.status)}">
+                            ${getStatusName(transfer.status)}
+                        </span>
+                    </td>
+                    <td>${transfer.createdBy}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary btn-sm" onclick="viewTransfer(${transfer.id})" 
+                                    title="查看详情">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            ${transfer.status === 'ACTIVE' ? `
+                                <button class="btn btn-outline-success btn-sm" onclick="completeTransfer(${transfer.id})" 
+                                        title="完成调用">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="cancelTransfer(${transfer.id})" 
+                                        title="取消调用">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // 加载统计信息
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/equipment-transfers/statistics');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('totalTransfers').textContent = data.totalTransfers;
+                    document.getElementById('activeTransfers').textContent = data.activeTransfers;
+                    document.getElementById('overdueTransfers').textContent = data.overdueLoans;
+                }
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+        
+        // 加载逾期借出记录
+        async function loadOverdueLoans() {
+            try {
+                const response = await fetch('/api/equipment-transfers/overdue');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayTransfers(data);
+                    showSuccess(`找到 ${data.length} 条逾期借出记录`);
+                } else {
+                    showError('加载逾期借出记录失败');
+                }
+            } catch (error) {
+                console.error('Error loading overdue loans:', error);
+                showError('加载逾期借出记录失败');
+            }
+        }
+        
+        // 显示创建模态框
+        function showCreateModal() {
+            document.getElementById('createTransferForm').reset();
+            document.getElementById('expectedReturnDateRow').style.display = 'none';
+            new bootstrap.Modal(document.getElementById('createTransferModal')).show();
+        }
+        
+        // 创建设备调用
+        async function createTransfer() {
+            const formData = {
+                equipmentId: parseInt(document.getElementById('equipmentId').value),
+                transferType: document.getElementById('transferType').value,
+                transferReason: document.getElementById('transferReason').value.trim(),
+                fromLocationId: document.getElementById('fromLocationId').value ? parseInt(document.getElementById('fromLocationId').value) : null,
+                toLocationId: document.getElementById('toLocationId').value ? parseInt(document.getElementById('toLocationId').value) : null,
+                fromUserId: document.getElementById('fromUserId').value ? parseInt(document.getElementById('fromUserId').value) : null,
+                toUserId: document.getElementById('toUserId').value ? parseInt(document.getElementById('toUserId').value) : null,
+                expectedReturnDate: document.getElementById('expectedReturnDate').value ? new Date(document.getElementById('expectedReturnDate').value).toISOString() : null
+            };
+            
+            // 验证必填字段
+            if (!formData.equipmentId || !formData.transferType || !formData.transferReason) {
+                showError('请填写所有必填字段');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/equipment-transfers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('createTransferModal')).hide();
+                    showSuccess('设备调用创建成功');
+                    loadTransfers();
+                    loadStatistics();
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.message || '创建设备调用失败');
+                }
+            } catch (error) {
+                console.error('Error creating transfer:', error);
+                showError('创建设备调用失败');
+            }
+        }
+        
+        // 完成设备调用
+        async function completeTransfer(id) {
+            if (!confirm('确定要完成此设备调用吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/equipment-transfers/${id}/complete`, {
+                    method: 'PUT'
+                });
+                
+                if (response.ok) {
+                    showSuccess('设备调用完成成功');
+                    loadTransfers();
+                    loadStatistics();
+                } else {
+                    showError('完成设备调用失败');
+                }
+            } catch (error) {
+                console.error('Error completing transfer:', error);
+                showError('完成设备调用失败');
+            }
+        }
+        
+        // 取消设备调用
+        async function cancelTransfer(id) {
+            if (!confirm('确定要取消此设备调用吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/equipment-transfers/${id}/cancel`, {
+                    method: 'PUT'
+                });
+                
+                if (response.ok) {
+                    showSuccess('设备调用取消成功');
+                    loadTransfers();
+                    loadStatistics();
+                } else {
+                    showError('取消设备调用失败');
+                }
+            } catch (error) {
+                console.error('Error cancelling transfer:', error);
+                showError('取消设备调用失败');
+            }
+        }
+        
+        // 加载下拉选项
+        async function loadSelectOptions() {
+            try {
+                // 加载设备列表
+                const equipmentResponse = await fetch('/api/equipment');
+                const equipmentData = await equipmentResponse.json();
+                if (equipmentResponse.ok) {
+                    const equipmentSelect = document.getElementById('equipmentId');
+                    equipmentData.forEach(eq => {
+                        const option = document.createElement('option');
+                        option.value = eq.id;
+                        option.textContent = `${eq.name} (${eq.assetNumber || '无资产编号'})`;
+                        equipmentSelect.appendChild(option);
+                    });
+                }
+                
+                // 加载位置列表
+                const locationResponse = await fetch('/api/locations');
+                const locationData = await locationResponse.json();
+                if (locationResponse.ok) {
+                    ['fromLocationId', 'toLocationId'].forEach(id => {
+                        const select = document.getElementById(id);
+                        locationData.forEach(loc => {
+                            const option = document.createElement('option');
+                            option.value = loc.id;
+                            option.textContent = loc.name;
+                            select.appendChild(option);
+                        });
+                    });
+                }
+                
+                // 加载用户列表
+                const userResponse = await fetch('/api/admin/users');
+                const userData = await userResponse.json();
+                if (userResponse.ok) {
+                    ['fromUserId', 'toUserId'].forEach(id => {
+                        const select = document.getElementById(id);
+                        userData.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = user.displayName || user.username;
+                            select.appendChild(option);
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading select options:', error);
+            }
+        }
+        
+        // 调用类型改变事件
+        function onTransferTypeChange() {
+            const transferType = document.getElementById('transferType').value;
+            const expectedReturnDateRow = document.getElementById('expectedReturnDateRow');
+            
+            if (transferType === 'LOAN') {
+                expectedReturnDateRow.style.display = 'block';
+            } else {
+                expectedReturnDateRow.style.display = 'none';
+            }
+        }
+        
+        // 过滤功能
+        function filterTransfers() {
+            currentFilterType = document.getElementById('filterType').value;
+            currentFilterStatus = document.getElementById('filterStatus').value;
+            loadTransfers();
+        }
+        
+        // 辅助函数
+        function getTransferTypeClass(type) {
+            const classes = {
+                'TRANSFER': 'bg-info',
+                'LOAN': 'bg-warning',
+                'RETURN': 'bg-success',
+                'MOVE': 'bg-secondary'
+            };
+            return classes[type] || 'bg-secondary';
+        }
+        
+        function getTransferTypeName(type) {
+            const names = {
+                'TRANSFER': '调拨',
+                'LOAN': '借出',
+                'RETURN': '归还',
+                'MOVE': '移动'
+            };
+            return names[type] || type;
+        }
+        
+        function getStatusClass(status) {
+            const classes = {
+                'ACTIVE': 'bg-warning text-dark',
+                'COMPLETED': 'bg-success',
+                'CANCELLED': 'bg-secondary'
+            };
+            return classes[status] || 'bg-secondary';
+        }
+        
+        function getStatusName(status) {
+            const names = {
+                'ACTIVE': '进行中',
+                'COMPLETED': '已完成',
+                'CANCELLED': '已取消'
+            };
+            return names[status] || status;
+        }
+
+        function formatDateTime(dateTime) {
+            if (!dateTime) return '-';
+            const date = new Date(dateTime);
+            return date.toLocaleString('zh-CN');
+        }
+
+        function isOverdue(transfer) {
+            try {
+                return transfer && transfer.transferType === 'LOAN' && transfer.status === 'ACTIVE'
+                    && transfer.expectedReturnDate && new Date(transfer.expectedReturnDate) < new Date();
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        function updatePagination(totalPages, currentPage) {
+            const pagination = document.getElementById('pagination');
+            let html = '';
+            
+            // 上一页
+            html += `<li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="loadTransfers(${currentPage - 1}); return false;">上一页</a>
+                     </li>`;
+            
+            // 页码
+            for (let i = 0; i < totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<li class="page-item active"><span class="page-link">${i + 1}</span></li>`;
+                } else {
+                    html += `<li class="page-item"><a class="page-link" href="#" onclick="loadTransfers(${i}); return false;">${i + 1}</a></li>`;
+                }
+            }
+            
+            // 下一页
+            html += `<li class="page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="loadTransfers(${currentPage + 1}); return false;">下一页</a>
+                     </li>`;
+            
+            pagination.innerHTML = html;
+        }
+        
+        function showSuccess(message) {
+            // 简单的成功提示实现
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+        
+        function showError(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+        
+        function viewTransfer(id) {
+            // 查看详情功能可以后续实现
+            showSuccess('查看详情功能开发中...');
+        }
+    </script>
+</body>
+</html>

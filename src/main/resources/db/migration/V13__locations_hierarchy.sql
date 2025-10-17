@@ -1,0 +1,2 @@
+ALTER TABLE locations ADD COLUMN parent_id BIGINT NULL;
+ALTER TABLE locations ADD COLUMN level INT NULL;

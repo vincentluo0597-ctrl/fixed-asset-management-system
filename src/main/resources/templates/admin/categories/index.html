@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备分类管理 - 资产管理后台</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
+        header { background: #1677ff; color: #fff; padding: 14px 20px; }
+        header h1 { margin:0; font-size: 18px; }
+        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
+        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
+        main { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; }
+        ul.tree { list-style: none; padding-left: 16px; }
+        ul.tree li { margin: 4px 0; }
+        .node { cursor: pointer; }
+        .node small { color: #888; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display:block; font-size: 12px; margin-bottom: 4px; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box; }
+        textarea { min-height: 80px; }
+        button { padding: 8px 12px; background: #1677ff; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        button.secondary { background: #555; }
+        button.danger { background: #ff4d4f; }
+    </style>
+    <script>
+        let selectedCategory = null;
+        let categoriesById = {};
+
+        async function loadTree() {
+            const res = await fetch('/api/equipment-categories/tree');
+            const roots = await res.json();
+            // 构建ID索引
+            categoriesById = {};
+            const indexCategories = (list) => list.forEach(c => { categoriesById[c.id] = c; if (c.children) indexCategories(c.children); });
+            indexCategories(roots);
+            const container = document.getElementById('tree');
+            container.innerHTML = '';
+            roots.forEach(r => container.appendChild(renderNode(r)));
+            // 填充父分类下拉
+            fillParentSelect();
+        }
+
+        function renderNode(cat) {
+            const li = document.createElement('li');
+            li.innerHTML = `<span class='node' onclick='selectCategory(${cat.id})'>${cat.name} <small>(code: ${cat.code}, sort: ${cat.sortOrder ?? ''})</small></span>`;
+            if (cat.children && cat.children.length) {
+                const ul = document.createElement('ul');
+                ul.className = 'tree';
+                cat.children.forEach(ch => ul.appendChild(renderNode(ch)));
+                li.appendChild(ul);
+            }
+            return li;
+        }
+
+        function selectCategory(id) {
+            selectedCategory = categoriesById[id];
+            document.getElementById('form-title').textContent = '编辑分类';
+            document.getElementById('code').value = selectedCategory.code ?? '';
+            document.getElementById('name').value = selectedCategory.name ?? '';
+            document.getElementById('parentId').value = selectedCategory.parentId ?? '';
+            document.getElementById('type').value = selectedCategory.type ?? '';
+            document.getElementById('sortOrder').value = selectedCategory.sortOrder ?? '';
+            document.getElementById('isActive').checked = !!selectedCategory.isActive;
+            document.getElementById('remarks').value = selectedCategory.remarks ?? '';
+            document.getElementById('description').value = selectedCategory.description ?? '';
+            document.getElementById('btn-delete').disabled = false;
+        }
+
+        function fillParentSelect() {
+            const select = document.getElementById('parentId');
+            const old = select.value;
+            select.innerHTML = '<option value="">-- 无（根） --</option>';
+            Object.values(categoriesById).forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${c.name} (${c.code})`;
+                select.appendChild(opt);
+            });
+            select.value = old;
+        }
+
+        function openCreateForm() {
+            selectedCategory = null;
+            document.getElementById('form-title').textContent = '新增分类';
+            document.getElementById('code').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('parentId').value = '';
+            document.getElementById('type').value = '';
+            document.getElementById('sortOrder').value = '';
+            document.getElementById('isActive').checked = true;
+            document.getElementById('remarks').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('btn-delete').disabled = true;
+        }
+
+        async function saveCategory() {
+            const payload = {
+                code: document.getElementById('code').value.trim(),
+                name: document.getElementById('name').value.trim(),
+                parentId: document.getElementById('parentId').value || null,
+                type: document.getElementById('type').value,
+                sortOrder: document.getElementById('sortOrder').value ? Number(document.getElementById('sortOrder').value) : null,
+                isActive: document.getElementById('isActive').checked,
+                remarks: document.getElementById('remarks').value.trim() || null,
+                description: document.getElementById('description').value.trim() || null
+            };
+            const headers = { 'Content-Type': 'application/json' };
+            let res;
+            if (selectedCategory && selectedCategory.id) {
+                res = await fetch(`/api/equipment-categories/${selectedCategory.id}`, { method: 'PUT', headers, body: JSON.stringify(payload) });
+            } else {
+                res = await fetch('/api/equipment-categories', { method: 'POST', headers, body: JSON.stringify(payload) });
+            }
+            if (!res.ok) {
+                const text = await res.text();
+                alert('保存失败：' + text);
+            } else {
+                alert('保存成功');
+                openCreateForm();
+                loadTree();
+            }
+        }
+
+        async function deleteCategory() {
+            if (!selectedCategory || !selectedCategory.id) return;
+            if (!confirm('确认删除该分类？（必须无子分类）')) return;
+            const res = await fetch(`/api/equipment-categories/${selectedCategory.id}`, { method: 'DELETE' });
+            if (!res.ok) {
+                const text = await res.text();
+                alert('删除失败：' + text);
+            } else {
+                alert('删除成功（已停用）');
+                openCreateForm();
+                loadTree();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            openCreateForm();
+            loadTree();
+        });
+    </script>
+</head>
+<body>
+<header>
+    <h1>资产管理后台</h1>
+    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
+    <div style="clear:both"></div>
+    </header>
+<nav>
+    <a href="/admin">仪表盘</a>
+    <a href="/admin/suppliers">供应商管理</a>
+    <a href="/admin/categories">设备分类管理</a>
+    <a href="/admin/equipment">设备管理</a>
+    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
+    <a href="/admin/locations">位置管理</a>
+    </nav>
+<main>
+    <div class="card">
+        <h3>分类树</h3>
+        <ul class="tree" id="tree"></ul>
+    </div>
+    <div class="card">
+        <h3 id="form-title">新增分类</h3>
+        <div class="form-grid">
+            <div>
+                <label>编码</label>
+                <input id="code" placeholder="唯一编码">
+            </div>
+            <div>
+                <label>名称</label>
+                <input id="name" placeholder="分类名称">
+            </div>
+            <div>
+                <label>父分类</label>
+                <select id="parentId"></select>
+            </div>
+            <div>
+                <label>设备类型</label>
+                <select id="type">
+                    <option value="">-- 请选择 --</option>
+                    <option value="教学设备">教学设备</option>
+                    <option value="科研设备">科研设备</option>
+                    <option value="办公设备">办公设备</option>
+                    <option value="生活设备">生活设备</option>
+                    <option value="其他设备">其他设备</option>
+                </select>
+            </div>
+            <div>
+                <label>排序值</label>
+                <input id="sortOrder" type="number" placeholder="默认 999">
+            </div>
+            <div>
+                <label>启用</label>
+                <input id="isActive" type="checkbox" checked>
+            </div>
+            <div style="grid-column: 1 / span 2">
+                <label>描述</label>
+                <textarea id="description" placeholder="分类描述"></textarea>
+            </div>
+            <div style="grid-column: 1 / span 2">
+                <label>备注</label>
+                <input id="remarks" placeholder="备注信息">
+            </div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+            <button onclick="saveCategory()">保存</button>
+            <button class="secondary" onclick="openCreateForm()">重置</button>
+            <button id="btn-delete" class="danger" onclick="deleteCategory()" disabled>删除</button>
+        </div>
+    </div>
+    </main>
+</body>
+</html>
