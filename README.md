@@ -80,6 +80,20 @@
   - PUT /api/equipment-transfers/{id}/cancel
 - 为避免懒加载序列化问题，后端在 Repository 层使用了 @EntityGraph 的带关联查询方法，并在保存后返回完整对象；同时集成了 jackson-datatype-hibernate5-jakarta。
 
+### 操作日志接口（新增）
+- 分页与高级筛选：
+  - GET /api/operation-logs/page
+  - 参数：actor（包含匹配）、entityType、entityId、action、from、to、keyword、page、size、sort
+  - 示例：/api/operation-logs/page?actor=张&entityType=Equipment&action=UPDATE&page=0&size=20&sort=createdAt,desc
+- 最新记录：
+  - GET /api/operation-logs/latest?entityType=Equipment&entityId=1[&action=CREATE]
+  - 说明：按时间倒序返回单条最新日志；action 可选
+- 导出 CSV：
+  - GET /api/operation-logs/export
+  - 参数与分页一致（不含 page/size），返回 CSV 文本流；字段列顺序为
+    id,createdAt,actor,entityType,entityId,action,details
+- 后台页面：/admin/operation-logs（Thymeleaf 模板，带筛选、分页、导出按钮）
+
 ## 常见问题与排查
 - 中文编码：
   - 确保数据库为 utf8mb4，连接串包含 useUnicode=true 与 characterEncoding=utf8（或 utf8mb4）。
