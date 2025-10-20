@@ -57,4 +57,10 @@ public class AdminController {
         // 页面模板位于 templates/transfers/index.html
         return "transfers/index";
     }
+
+    @GetMapping("/operation-logs")
+    public String operationLogs(Model model) {
+        model.addAttribute("title", "操作日志管理");
+        return "admin/operation-logs/index";
+    }
 }

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>操作日志</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="wrap">
+      <div class="brand">设备管理系统 · 操作日志</div>
+      <nav>
+        <a href="/admin">管理首页</a>
+        <a href="/admin/users">用户管理</a>
+        <a href="/admin/equipment">设备管理</a>
+        <a href="/admin/transfers">设备调用</a>
+        <a href="/admin/locations">位置管理</a>
+        <a href="/admin/categories">分类管理</a>
+        <a href="/admin/suppliers">供应商管理</a>
+        <a href="/admin/maintenances">维修管理</a>
+        <a href="/admin/inventory">盘库</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <div class="card">
+      <div class="section-title">筛选</div>
+      <div class="filters" style="grid-template-columns: repeat(6, minmax(140px, 1fr));">
+        <div class="form-item">
+          <label>操作者（包含匹配）</label>
+          <input id="fActor" type="text" placeholder="例如：张三">
+        </div>
+        <div class="form-item">
+          <label>实体类型</label>
+          <input id="fEntityType" type="text" placeholder="例如：Equipment">
+        </div>
+        <div class="form-item">
+          <label>实体ID</label>
+          <input id="fEntityId" type="number" min="0" placeholder="例如：1001">
+        </div>
+        <div class="form-item">
+          <label>动作</label>
+          <input id="fAction" type="text" placeholder="CREATE/UPDATE/DELETE/...">
+        </div>
+        <div class="form-item">
+          <label>开始时间</label>
+          <input id="fFrom" type="datetime-local">
+        </div>
+        <div class="form-item">
+          <label>结束时间</label>
+          <input id="fTo" type="datetime-local">
+        </div>
+        <div class="form-item" style="grid-column: span 3;">
+          <label>详情关键词</label>
+          <input id="fKeyword" type="text" placeholder="在 details 中模糊匹配">
+        </div>
+        <div class="form-item">
+          <label>每页</label>
+          <select id="pageSize">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>&nbsp;</label>
+          <div class="page-controls">
+            <button class="btn btn-primary" onclick="applyFilters()">查询</button>
+            <button class="btn btn-secondary" onclick="clearFilters()">清空</button>
+            <button class="btn" onclick="exportCsv()">导出 CSV</button>
+          </div>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:8px;">接口：GET /api/operation-logs/page（actor/entityType/entityId/action/from/to/keyword/page/size/sort）；导出：GET /api/operation-logs/export（支持同样筛选参数）</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">操作日志列表</div>
+      <table id="logTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>时间</th>
+            <th>操作者</th>
+            <th>实体类型</th>
+            <th>实体ID</th>
+            <th>动作</th>
+            <th>详情</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="page-controls" style="margin-top:10px;">
+        <button class="btn" onclick="prevPage()">上一页</button>
+        <button class="btn" onclick="nextPage()">下一页</button>
+        <span id="pageInfo" class="page-info">第 1/1 页，共 0 条</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API_BASE = '/api/operation-logs';
+let currentPage = 0;
+let totalPages = 1;
+let totalElements = 0;
+
+function toIsoLocal(dtStr) {
+  // datetime-local -> ISO 8601（不含秒则补 00）
+  if (!dtStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dtStr)) return dtStr + ':00';
+  return dtStr; // 浏览器若已包含秒
+}
+
+function buildParams(page = 0) {
+  const p = new URLSearchParams();
+  const actor = document.getElementById('fActor').value.trim();
+  const entityType = document.getElementById('fEntityType').value.trim();
+  const entityIdStr = document.getElementById('fEntityId').value.trim();
+  const action = document.getElementById('fAction').value.trim();
+  const from = toIsoLocal(document.getElementById('fFrom').value);
+  const to = toIsoLocal(document.getElementById('fTo').value);
+  const keyword = document.getElementById('fKeyword').value.trim();
+  const size = parseInt(document.getElementById('pageSize').value, 10) || 20;
+  if (actor) p.set('actor', actor);
+  if (entityType) p.set('entityType', entityType);
+  if (entityIdStr) p.set('entityId', entityIdStr);
+  if (action) p.set('action', action);
+  if (from) p.set('from', from);
+  if (to) p.set('to', to);
+  if (keyword) p.set('keyword', keyword);
+  p.set('page', String(page));
+  p.set('size', String(size));
+  // 默认排序：createdAt,DESC（后端也会默认）
+  // p.set('sort', 'createdAt,desc');
+  return p;
+}
+
+async function fetchJson(url) {
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    const txt = await resp.text();
+    throw new Error(`HTTP ${resp.status}: ${txt}`);
+  }
+  const ct = resp.headers.get('content-type') || '';
+  if (ct.includes('application/json')) return resp.json();
+  return resp.text();
+}
+
+function fmtTime(s) {
+  if (!s) return '';
+  // 期望形如 2025-01-01T12:34:56
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+async function loadPage(page = 0) {
+  const params = buildParams(page);
+  const url = `${API_BASE}/page?${params.toString()}`;
+  try {
+    const data = await fetchJson(url);
+    const tbody = document.querySelector('#logTable tbody');
+    tbody.innerHTML = '';
+    const rows = (data && data.content) ? data.content : [];
+    totalPages = (data && typeof data.totalPages === 'number') ? data.totalPages : 1;
+    totalElements = (data && typeof data.totalElements === 'number') ? data.totalElements : rows.length;
+    currentPage = (data && typeof data.number === 'number') ? data.number : page;
+    const html = rows.map(item => {
+      const id = item.id ?? '';
+      const actor = item.actor ?? '';
+      const entityType = item.entityType ?? '';
+      const entityId = (item.entityId == null ? '' : item.entityId);
+      const action = item.action ?? '';
+      const details = item.details ?? '';
+      const createdAt = fmtTime(item.createdAt);
+      return `<tr>
+        <td>${id}</td>
+        <td>${createdAt}</td>
+        <td>${actor}</td>
+        <td>${entityType}</td>
+        <td>${entityId}</td>
+        <td>${action}</td>
+        <td>${details}</td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = html;
+    document.getElementById('pageInfo').textContent = `第 ${currentPage+1}/${Math.max(totalPages,1)} 页，共 ${totalElements} 条`;
+  } catch (err) {
+    alert('加载日志失败：' + err.message);
+  }
+}
+
+function applyFilters() { loadPage(0); }
+function clearFilters() {
+  ['fActor','fEntityType','fEntityId','fAction','fFrom','fTo','fKeyword'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  loadPage(0);
+}
+function prevPage() { if (currentPage > 0) loadPage(currentPage - 1); }
+function nextPage() { if (currentPage < totalPages - 1) loadPage(currentPage + 1); }
+
+function exportCsv() {
+  const params = buildParams();
+  // 导出接口无需 page/size
+  params.delete('page');
+  params.delete('size');
+  const url = `${API_BASE}/export?${params.toString()}`;
+  window.open(url, '_blank');
+}
+
+// 初始化
+loadPage(0);
+</script>
+</body>
+</html>
