@@ -5,6 +5,9 @@ import com.example.gdzc.domain.User;
 import com.example.gdzc.repository.OperationLogRepository;
 import com.example.gdzc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -116,5 +119,52 @@ public class OperationLogService {
         return operationLogRepository
                 .findTopByEntityTypeAndEntityIdOrderByCreatedAtDesc(entityType, entityId)
                 .orElse(null);
+    }
+
+    /**
+     * 分页与高级筛选查询。
+     * 支持 actor（包含匹配）、entityType、entityId、action、from/to 时间范围、keyword（在 details 上模糊匹配）。
+     * 若未指定排序则默认 createdAt DESC。
+     */
+    public Page<OperationLog> pageQuery(String actor,
+                                        String entityType,
+                                        Long entityId,
+                                        String action,
+                                        LocalDateTime from,
+                                        LocalDateTime to,
+                                        String keyword,
+                                        Pageable pageable) {
+        Specification<OperationLog> spec = Specification.where(null);
+        if (actor != null && !actor.isBlank()) {
+            String like = "%" + actor.trim().toLowerCase() + "%";
+            spec = spec.and((root, q, cb) -> cb.like(cb.lower(root.get("actor")), like));
+        }
+        if (entityType != null && !entityType.isBlank()) {
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("entityType"), entityType));
+        }
+        if (entityId != null) {
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("entityId"), entityId));
+        }
+        if (action != null && !action.isBlank()) {
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("action"), action));
+        }
+        if (from != null) {
+            spec = spec.and((root, q, cb) -> cb.greaterThanOrEqualTo(root.get("createdAt"), from));
+        }
+        if (to != null) {
+            spec = spec.and((root, q, cb) -> cb.lessThanOrEqualTo(root.get("createdAt"), to));
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            String like = "%" + keyword.trim().toLowerCase() + "%";
+            spec = spec.and((root, q, cb) -> cb.like(cb.lower(root.get("details")), like));
+        }
+
+        Pageable effective = pageable;
+        if (effective == null) {
+            effective = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+        } else if (effective.getSort() == null || effective.getSort().isUnsorted()) {
+            effective = PageRequest.of(effective.getPageNumber(), effective.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+        }
+        return operationLogRepository.findAll(spec, effective);
     }
 }
