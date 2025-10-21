@@ -66,6 +66,22 @@
           </select>
         </div>
         <div class="form-item">
+          <label>排序字段</label>
+          <select id="sortProp">
+            <option value="createdAt" selected>时间</option>
+            <option value="actor">操作者</option>
+            <option value="action">动作</option>
+            <option value="entityId">实体ID</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>方向</label>
+          <select id="sortDir">
+            <option value="desc" selected>降序</option>
+            <option value="asc">升序</option>
+          </select>
+        </div>
+        <div class="form-item">
           <label>&nbsp;</label>
           <div class="page-controls">
             <button class="btn btn-primary" onclick="applyFilters()">查询</button>
@@ -79,6 +95,16 @@
 
     <div class="card">
       <div class="section-title">操作日志列表</div>
+      <div class="toolbar" style="display:flex; gap:8px; flex-wrap: wrap; margin: 6px 0 10px 0; align-items:center;">
+        <span class="muted">快捷筛选：</span>
+        <button class="btn btn-secondary" onclick="quickAction('CREATE')">仅 CREATE</button>
+        <button class="btn btn-secondary" onclick="quickAction('UPDATE')">仅 UPDATE</button>
+        <button class="btn btn-secondary" onclick="quickAction('DELETE')">仅 DELETE</button>
+        <span class="muted" style="margin-left: 8px;">时间：</span>
+        <button class="btn" onclick="quickTime('24h')">最近 24 小时</button>
+        <button class="btn" onclick="quickTime('7d')">最近 7 天</button>
+        <button class="btn" onclick="resetQuick()">重置</button>
+      </div>
       <table id="logTable">
         <thead>
           <tr>
@@ -89,6 +115,7 @@
             <th>实体ID</th>
             <th>动作</th>
             <th>详情</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -101,11 +128,41 @@
     </div>
   </div>
 
+  <!-- 详情弹窗（覆盖层） -->
+  <div id="detailOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:9999;">
+    <div class="card" style="background:#fff; width:90%; max-width:900px;">
+      <div class="section-title">日志详情</div>
+      <div style="padding: 8px 12px;">
+        <div style="display:grid; grid-template-columns: 160px 1fr; gap:8px; align-items:center;">
+          <div class="muted">时间</div>
+          <div id="detailCreatedAt"></div>
+          <div class="muted">操作者</div>
+          <div id="detailActor"></div>
+          <div class="muted">动作</div>
+          <div id="detailAction"></div>
+          <div class="muted">实体类型</div>
+          <div id="detailEntityType"></div>
+          <div class="muted">实体ID</div>
+          <div id="detailEntityId"></div>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="muted">详情</div>
+          <pre id="detailText" style="white-space:pre-wrap; word-break:break-word; background:#f5f7fa; padding:10px; border-radius:6px; border:1px solid #eaecef; max-height:40vh; overflow:auto;"></pre>
+        </div>
+      </div>
+      <div class="page-controls" style="padding: 0 12px 12px 12px;">
+        <button class="btn" onclick="copyDetails()">复制详情</button>
+        <button class="btn btn-secondary" onclick="closeDetail()">关闭</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 const API_BASE = '/api/operation-logs';
 let currentPage = 0;
 let totalPages = 1;
 let totalElements = 0;
+let lastLogs = [];
 
 function toIsoLocal(dtStr) {
   // datetime-local -> ISO 8601（不含秒则补 00）
@@ -124,6 +181,10 @@ function buildParams(page = 0) {
   const to = toIsoLocal(document.getElementById('fTo').value);
   const keyword = document.getElementById('fKeyword').value.trim();
   const size = parseInt(document.getElementById('pageSize').value, 10) || 20;
+  const sortPropEl = document.getElementById('sortProp');
+  const sortDirEl = document.getElementById('sortDir');
+  const sortProp = sortPropEl ? sortPropEl.value : 'createdAt';
+  const sortDir = sortDirEl ? sortDirEl.value : 'desc';
   if (actor) p.set('actor', actor);
   if (entityType) p.set('entityType', entityType);
   if (entityIdStr) p.set('entityId', entityIdStr);
@@ -133,8 +194,7 @@ function buildParams(page = 0) {
   if (keyword) p.set('keyword', keyword);
   p.set('page', String(page));
   p.set('size', String(size));
-  // 默认排序：createdAt,DESC（后端也会默认）
-  // p.set('sort', 'createdAt,desc');
+  p.set('sort', `${sortProp},${sortDir}`);
   return p;
 }
 
@@ -169,7 +229,8 @@ async function loadPage(page = 0) {
     totalPages = (data && typeof data.totalPages === 'number') ? data.totalPages : 1;
     totalElements = (data && typeof data.totalElements === 'number') ? data.totalElements : rows.length;
     currentPage = (data && typeof data.number === 'number') ? data.number : page;
-    const html = rows.map(item => {
+    lastLogs = rows;
+    const html = rows.map((item, i) => {
       const id = item.id ?? '';
       const actor = item.actor ?? '';
       const entityType = item.entityType ?? '';
@@ -185,6 +246,7 @@ async function loadPage(page = 0) {
         <td>${entityId}</td>
         <td>${action}</td>
         <td>${details}</td>
+        <td><button class="btn btn-secondary" onclick="openDetail(${i})">查看</button></td>
       </tr>`;
     }).join('');
     tbody.innerHTML = html;
@@ -201,6 +263,32 @@ function clearFilters() {
   });
   loadPage(0);
 }
+
+// 快捷筛选
+function toLocalDtStr(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+function quickAction(action) {
+  const el = document.getElementById('fAction');
+  if (el) el.value = action;
+  loadPage(0);
+}
+function quickTime(range) {
+  const now = new Date();
+  let from = now;
+  if (range === '24h') from = new Date(now.getTime() - 24*3600*1000);
+  if (range === '7d') from = new Date(now.getTime() - 7*24*3600*1000);
+  const fEl = document.getElementById('fFrom');
+  const tEl = document.getElementById('fTo');
+  if (fEl) fEl.value = toLocalDtStr(from);
+  if (tEl) tEl.value = toLocalDtStr(now);
+  loadPage(0);
+}
+function resetQuick() {
+  ['fAction','fFrom','fTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  loadPage(0);
+}
 function prevPage() { if (currentPage > 0) loadPage(currentPage - 1); }
 function nextPage() { if (currentPage < totalPages - 1) loadPage(currentPage + 1); }
 
@@ -211,6 +299,36 @@ function exportCsv() {
   params.delete('size');
   const url = `${API_BASE}/export?${params.toString()}`;
   window.open(url, '_blank');
+}
+
+function openDetail(i) {
+  const overlay = document.getElementById('detailOverlay');
+  const item = lastLogs[i];
+  if (!overlay || !item) return;
+  const createdAt = fmtTime(item.createdAt);
+  document.getElementById('detailCreatedAt').textContent = createdAt;
+  document.getElementById('detailActor').textContent = item.actor ?? '';
+  document.getElementById('detailAction').textContent = item.action ?? '';
+  document.getElementById('detailEntityType').textContent = item.entityType ?? '';
+  document.getElementById('detailEntityId').textContent = (item.entityId == null ? '' : item.entityId);
+  const detailsText = item.details ?? '';
+  document.getElementById('detailText').textContent = detailsText;
+  overlay.classList.remove('hidden');
+  window._currentDetailText = `时间：${createdAt}\n操作者：${item.actor ?? ''}\n动作：${item.action ?? ''}\n实体类型：${item.entityType ?? ''}\n实体ID：${item.entityId == null ? '' : item.entityId}\n详情：\n${detailsText}`;
+}
+function closeDetail() {
+  const overlay = document.getElementById('detailOverlay');
+  if (overlay) overlay.classList.add('hidden');
+  window._currentDetailText = '';
+}
+async function copyDetails() {
+  const txt = window._currentDetailText || (document.getElementById('detailText')?.textContent || '');
+  try {
+    await navigator.clipboard.writeText(txt);
+    alert('已复制到剪贴板');
+  } catch (e) {
+    alert('复制失败：' + e.message);
+  }
 }
 
 // 初始化
