@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>备件管理 - 资产管理后台</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
+        header { background: #1677ff; color: #fff; padding: 14px 20px; }
+        header h1 { margin:0; font-size: 18px; }
+        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
+        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
+        main { padding: 20px; }
+        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; font-size: 12px; }
+        th { background: #fafafa; }
+        .toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+        button { padding: 8px 12px; background: #1677ff; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        button.secondary { background: #555; }
+        .pagination { margin-top: 10px; display: flex; gap: 6px; align-items: center; }
+        .danger { color: #ff4d4f; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+    <script>
+        let currentPage = 0;
+        let pageSize = 10;
+
+        async function loadParts(page = 0) {
+            currentPage = page;
+            const keyword = document.getElementById('keyword').value.trim();
+            const lowStockOnly = document.getElementById('lowStockOnly').checked;
+            const params = new URLSearchParams({ page, size: pageSize });
+            if (keyword) params.append('keyword', keyword);
+            if (lowStockOnly) params.append('lowStockOnly', 'true');
+            const res = await fetch(`/api/spare-parts/page?${params.toString()}`);
+            const pageData = await res.json();
+            const tbody = document.querySelector('#parts-tbody');
+            tbody.innerHTML = '';
+            pageData.content.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${p.id ?? ''}</td>
+                    <td>${p.code ?? ''}</td>
+                    <td>${p.name ?? ''}</td>
+                    <td>${p.model ?? ''}</td>
+                    <td>${p.unit ?? ''}</td>
+                    <td>${p.category ?? ''}</td>
+                    <td>${p.safetyStock ?? 0}</td>
+                    <td class='${(p.totalStock ?? 0) < (p.safetyStock ?? 0) ? 'danger' : ''}'>${p.totalStock ?? 0}</td>
+                    <td>${p.defaultLocationId ?? ''}</td>
+                    <td>${p.binCode ?? ''}</td>
+                    <td><button onclick='openAdjustForm(${p.id})'>调整库存</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('page-info').textContent = `第 ${pageData.number + 1} / ${pageData.totalPages} 页，共 ${pageData.totalElements} 条`;
+            document.getElementById('btn-prev').disabled = pageData.first;
+            document.getElementById('btn-next').disabled = pageData.last;
+        }
+
+        function openAdjustForm(partId) {
+            document.getElementById('adjust-part-id').value = partId;
+            document.getElementById('adjust-location-id').value = '';
+            document.getElementById('adjust-quantity').value = '';
+            document.getElementById('adjust-type').value = 'ADJUST';
+            document.getElementById('adjust-note').value = '';
+            document.getElementById('adjust-ref-maintenance-id').value = '';
+            document.getElementById('adjust-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function submitAdjust() {
+            const id = document.getElementById('adjust-part-id').value;
+            const locationId = document.getElementById('adjust-location-id').value;
+            const quantity = document.getElementById('adjust-quantity').value;
+            const type = document.getElementById('adjust-type').value;
+            const note = document.getElementById('adjust-note').value.trim();
+            const refMaintenanceId = document.getElementById('adjust-ref-maintenance-id').value.trim();
+            if (!id || !locationId || !quantity) { alert('请填写备件ID、库位ID与数量'); return; }
+            const params = new URLSearchParams();
+            params.append('locationId', locationId);
+            params.append('quantity', quantity);
+            params.append('type', type);
+            if (note) params.append('note', note);
+            if (refMaintenanceId) params.append('refMaintenanceId', refMaintenanceId);
+            const res = await fetch(`/api/spare-parts/${id}/adjust-stock`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+            if (!res.ok) {
+                const text = await res.text();
+                alert('调整失败：' + text);
+            } else {
+                alert('调整成功');
+                loadParts(currentPage);
+            }
+        }
+
+        async function queryByModel() {
+            const model = document.getElementById('query-model').value.trim();
+            if (!model) { alert('请输入设备型号'); return; }
+            const res = await fetch(`/api/spare-parts/by-model?model=${encodeURIComponent(model)}`);
+            const links = await res.json();
+            const list = document.getElementById('model-links');
+            list.innerHTML = '';
+            links.forEach(l => {
+                const li = document.createElement('li');
+                li.textContent = `型号 ${l.equipmentModel} -> 备件ID ${l.partId}`;
+                list.appendChild(li);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadParts(0);
+        });
+    </script>
+</head>
+<body>
+<header>
+    <h1>资产管理后台</h1>
+    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
+    <div style="clear:both"></div>
+</header>
+<nav>
+    <a href="/admin">仪表盘</a>
+    <a href="/admin/spare-parts">备件管理</a>
+    <a href="/admin/consumables">耗材管理</a>
+    <a href="/admin/equipment-docs">设备文档</a>
+    <a href="/admin/knowledge">故障知识库</a>
+    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
+</nav>
+<main>
+    <div class="card">
+        <div class="toolbar">
+            <input id="keyword" type="text" placeholder="按名称/编码/类别搜索">
+            <label><input type="checkbox" id="lowStockOnly"> 仅显示低库存</label>
+            <button onclick="loadParts(0)">搜索</button>
+            <span style="flex:1"></span>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>编码</th>
+                <th>名称</th>
+                <th>型号</th>
+                <th>单位</th>
+                <th>类别</th>
+                <th>安全库存</th>
+                <th>总库存</th>
+                <th>默认库位</th>
+                <th>货架位</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="parts-tbody"></tbody>
+        </table>
+        <div class="pagination">
+            <button id="btn-prev" onclick="loadParts(Math.max(0, currentPage-1))">上一页</button>
+            <span id="page-info">第 1 / 1 页</span>
+            <button id="btn-next" onclick="loadParts(currentPage+1)">下一页</button>
+        </div>
+    </div>
+
+    <div class="card" id="adjust-card">
+        <h3>库存调整</h3>
+        <div class="grid">
+            <div>
+                <label>备件ID</label>
+                <input id="adjust-part-id" placeholder="要调整的备件ID">
+            </div>
+            <div>
+                <label>库位ID</label>
+                <input id="adjust-location-id" placeholder="库位ID">
+            </div>
+            <div>
+                <label>数量</label>
+                <input id="adjust-quantity" type="number" placeholder="正数表示入库，负数表示出库">
+            </div>
+            <div>
+                <label>类型</label>
+                <select id="adjust-type">
+                    <option value="IN">入库</option>
+                    <option value="OUT">出库</option>
+                    <option value="ADJUST" selected>调整</option>
+                </select>
+            </div>
+            <div>
+                <label>关联维修ID（可选）</label>
+                <input id="adjust-ref-maintenance-id" placeholder="维修记录ID">
+            </div>
+            <div>
+                <label>备注</label>
+                <input id="adjust-note" placeholder="备注">
+            </div>
+        </div>
+        <div style="margin-top:10px">
+            <button onclick="submitAdjust()">提交调整</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>根据设备型号查找匹配备件</h3>
+        <div class="toolbar">
+            <input id="query-model" placeholder="设备型号">
+            <button class="secondary" onclick="queryByModel()">查询</button>
+        </div>
+        <ul id="model-links"></ul>
+    </div>
+</main>
+</body>
+</html>

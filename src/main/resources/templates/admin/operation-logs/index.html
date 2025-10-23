@@ -5,6 +5,15 @@
   <title>操作日志</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    .sortable { cursor: pointer; user-select: none; }
+    .sort-ind { margin-left: 4px; font-size: 12px; color: #888; }
+    .json-key { color: #8957e5; }
+    .json-str { color: #0a7; }
+    .json-num { color: #c92; }
+    .json-bool { color: #d14; }
+    .json-null { color: #999; font-style: italic; }
+  </style>
 </head>
 <body>
   <header class="admin-header">
@@ -34,7 +43,17 @@
         </div>
         <div class="form-item">
           <label>实体类型</label>
-          <input id="fEntityType" type="text" placeholder="例如：Equipment">
+          <input id="fEntityType" type="text" placeholder="例如：Equipment" list="entityTypeList">
+          <datalist id="entityTypeList">
+            <option value="Equipment"></option>
+            <option value="Maintenance"></option>
+            <option value="Transfer"></option>
+            <option value="Location"></option>
+            <option value="Category"></option>
+            <option value="Supplier"></option>
+            <option value="User"></option>
+            <option value="OperationLog"></option>
+          </datalist>
         </div>
         <div class="form-item">
           <label>实体ID</label>
@@ -42,7 +61,12 @@
         </div>
         <div class="form-item">
           <label>动作</label>
-          <input id="fAction" type="text" placeholder="CREATE/UPDATE/DELETE/...">
+          <select id="fAction">
+            <option value="">全部</option>
+            <option value="CREATE">CREATE</option>
+            <option value="UPDATE">UPDATE</option>
+            <option value="DELETE">DELETE</option>
+          </select>
         </div>
         <div class="form-item">
           <label>开始时间</label>
@@ -108,18 +132,31 @@
       <table id="logTable">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>时间</th>
-            <th>操作者</th>
-            <th>实体类型</th>
-            <th>实体ID</th>
-            <th>动作</th>
+            <th class="sortable" onclick="setSort('id')">ID<span id="sortInd-id" class="sort-ind"></span></th>
+            <th class="sortable" onclick="setSort('createdAt')">时间<span id="sortInd-createdAt" class="sort-ind"></span></th>
+            <th class="sortable" onclick="setSort('actor')">操作者<span id="sortInd-actor" class="sort-ind"></span></th>
+            <th class="sortable" onclick="setSort('entityType')">实体类型<span id="sortInd-entityType" class="sort-ind"></span></th>
+            <th class="sortable" onclick="setSort('entityId')">实体ID<span id="sortInd-entityId" class="sort-ind"></span></th>
+            <th class="sortable" onclick="setSort('action')">动作<span id="sortInd-action" class="sort-ind"></span></th>
             <th>详情</th>
             <th>操作</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
+      <div class="toolbar" style="display:flex; gap:8px; flex-wrap: wrap; margin: 6px 0 10px 0; align-items:center;">
+        <span class="muted">导出选项：</span>
+        <label><input type="checkbox" id="col-id" checked> ID</label>
+        <label><input type="checkbox" id="col-createdAt" checked> 时间</label>
+        <label><input type="checkbox" id="col-actor" checked> 操作者</label>
+        <label><input type="checkbox" id="col-entityType" checked> 实体类型</label>
+        <label><input type="checkbox" id="col-entityId" checked> 实体ID</label>
+        <label><input type="checkbox" id="col-action" checked> 动作</label>
+        <label><input type="checkbox" id="col-details" checked> 详情</label>
+        <span class="muted" style="margin-left:8px;">文件名：</span>
+        <input id="exportFilename" type="text" value="operation-logs.csv" style="width:200px;">
+        <button class="btn" onclick="exportCurrentCsv()">导出当前页 CSV</button>
+      </div>
       <div class="page-controls" style="margin-top:10px;">
         <button class="btn" onclick="prevPage()">上一页</button>
         <button class="btn" onclick="nextPage()">下一页</button>
@@ -147,7 +184,7 @@
         </div>
         <div style="margin-top:10px;">
           <div class="muted">详情</div>
-          <pre id="detailText" style="white-space:pre-wrap; word-break:break-word; background:#f5f7fa; padding:10px; border-radius:6px; border:1px solid #eaecef; max-height:40vh; overflow:auto;"></pre>
+          <pre id="detailText" style="white-space:pre-wrap; word-break:break-word; background:#f5f7fa; padding:10px; border-radius:6px; border:1px solid #eaecef; max-height:40vh; overflow:auto; font-family: Menlo, Consolas, monospace;"></pre>
         </div>
       </div>
       <div class="page-controls" style="padding: 0 12px 12px 12px;">
@@ -169,6 +206,11 @@ function toIsoLocal(dtStr) {
   if (!dtStr) return '';
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dtStr)) return dtStr + ':00';
   return dtStr; // 浏览器若已包含秒
+}
+function isoToLocalInput(iso) {
+  if (!iso) return '';
+  const m = String(iso).match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+  return m ? m[1] : String(iso);
 }
 
 function buildParams(page = 0) {
@@ -219,6 +261,7 @@ function fmtTime(s) {
 }
 
 async function loadPage(page = 0) {
+  syncUrlFromUI(page);
   const params = buildParams(page);
   const url = `${API_BASE}/page?${params.toString()}`;
   try {
@@ -251,6 +294,7 @@ async function loadPage(page = 0) {
     }).join('');
     tbody.innerHTML = html;
     document.getElementById('pageInfo').textContent = `第 ${currentPage+1}/${Math.max(totalPages,1)} 页，共 ${totalElements} 条`;
+    updateSortIndicators();
   } catch (err) {
     alert('加载日志失败：' + err.message);
   }
@@ -261,6 +305,11 @@ function clearFilters() {
   ['fActor','fEntityType','fEntityId','fAction','fFrom','fTo','fKeyword'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  const sortPropEl = document.getElementById('sortProp');
+  const sortDirEl = document.getElementById('sortDir');
+  if (sortPropEl) sortPropEl.value = 'createdAt';
+  if (sortDirEl) sortDirEl.value = 'desc';
+  updateSortIndicators();
   loadPage(0);
 }
 
@@ -292,6 +341,31 @@ function resetQuick() {
 function prevPage() { if (currentPage > 0) loadPage(currentPage - 1); }
 function nextPage() { if (currentPage < totalPages - 1) loadPage(currentPage + 1); }
 
+function updateSortIndicators() {
+  const propEl = document.getElementById('sortProp');
+  const dirEl = document.getElementById('sortDir');
+  const prop = propEl ? propEl.value : 'createdAt';
+  const dir = dirEl ? dirEl.value : 'desc';
+  const props = ['id','createdAt','actor','entityType','entityId','action'];
+  props.forEach(p => {
+    const ind = document.getElementById('sortInd-' + p);
+    if (ind) ind.textContent = (p === prop) ? (dir === 'desc' ? '▼' : '▲') : '';
+  });
+}
+function setSort(prop) {
+  const propEl = document.getElementById('sortProp');
+  const dirEl = document.getElementById('sortDir');
+  if (!propEl || !dirEl) return;
+  if (propEl.value === prop) {
+    dirEl.value = (dirEl.value === 'desc') ? 'asc' : 'desc';
+  } else {
+    propEl.value = prop;
+    dirEl.value = 'desc';
+  }
+  updateSortIndicators();
+  loadPage(0);
+}
+
 function exportCsv() {
   const params = buildParams();
   // 导出接口无需 page/size
@@ -301,6 +375,48 @@ function exportCsv() {
   window.open(url, '_blank');
 }
 
+function exportCurrentCsv() {
+  const colsAll = ['id','createdAt','actor','entityType','entityId','action','details'];
+  const headerMap = { id:'ID', createdAt:'时间', actor:'操作者', entityType:'实体类型', entityId:'实体ID', action:'动作', details:'详情' };
+  const cols = colsAll.filter(c => (document.getElementById('col-'+c)?.checked));
+  if (cols.length === 0) { alert('请至少选择一个列'); return; }
+  const rows = lastLogs || [];
+  const header = cols.map(c => headerMap[c]);
+  const dataRows = rows.map(item => cols.map(c => {
+    if (c === 'createdAt') return fmtTime(item.createdAt ?? '');
+    const v = item[c] ?? '';
+    return String(v).replace(/\r?\n/g, ' ');
+  }));
+  const csvLines = [header].concat(dataRows).map(row => row.map(cell => {
+    const s = String(cell);
+    const needQuote = /[",\n]/.test(s);
+    const escaped = s.replace(/"/g, '""');
+    return needQuote ? `"${escaped}"` : escaped;
+  }).join(',')).join('\n');
+  const bom = new Uint8Array([0xEF,0xBB,0xBF]);
+  const blob = new Blob([bom, csvLines], { type:'text/csv;charset=utf-8;' });
+  const fnEl = document.getElementById('exportFilename');
+  const filename = (fnEl && fnEl.value.trim()) ? fnEl.value.trim() : 'operation-logs.csv';
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+}
+function highlightJson(jsonStr){
+  const esc = escapeHtml(jsonStr);
+  return esc
+    .replace(/(&quot;.*?&quot;)(\s*:\s*)/g, '<span class="json-key">$1</span>$2')
+    .replace(/:\s*(&quot;.*?&quot;)/g, ': <span class="json-str">$1</span>')
+    .replace(/:\s*(\d+(?:\.\d+)?)/g, ': <span class="json-num">$1</span>')
+    .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
+    .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+}
 function openDetail(i) {
   const overlay = document.getElementById('detailOverlay');
   const item = lastLogs[i];
@@ -311,10 +427,19 @@ function openDetail(i) {
   document.getElementById('detailAction').textContent = item.action ?? '';
   document.getElementById('detailEntityType').textContent = item.entityType ?? '';
   document.getElementById('detailEntityId').textContent = (item.entityId == null ? '' : item.entityId);
-  const detailsText = item.details ?? '';
-  document.getElementById('detailText').textContent = detailsText;
+  const raw = item.details ?? '';
+  let displayHtml = null;
+  try {
+    const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const pretty = JSON.stringify(obj, null, 2);
+    displayHtml = highlightJson(pretty);
+  } catch(e) {
+    displayHtml = escapeHtml(raw);
+  }
+  const pre = document.getElementById('detailText');
+  if (pre) { pre.innerHTML = displayHtml; }
   overlay.classList.remove('hidden');
-  window._currentDetailText = `时间：${createdAt}\n操作者：${item.actor ?? ''}\n动作：${item.action ?? ''}\n实体类型：${item.entityType ?? ''}\n实体ID：${item.entityId == null ? '' : item.entityId}\n详情：\n${detailsText}`;
+  window._currentDetailText = `时间：${createdAt}\n操作者：${item.actor ?? ''}\n动作：${item.action ?? ''}\n实体类型：${item.entityType ?? ''}\n实体ID：${item.entityId == null ? '' : item.entityId}\n详情：\n${typeof raw === 'string' ? raw : JSON.stringify(raw)}`;
 }
 function closeDetail() {
   const overlay = document.getElementById('detailOverlay');
@@ -332,7 +457,194 @@ async function copyDetails() {
 }
 
 // 初始化
-loadPage(0);
+function applyQueryToUI() {
+  const qs = new URLSearchParams(window.location.search);
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el != null && v != null) el.value = v; };
+  setVal('fActor', qs.get('actor') || '');
+  setVal('fEntityType', qs.get('entityType') || '');
+  setVal('fEntityId', qs.get('entityId') || '');
+  setVal('fAction', qs.get('action') || '');
+  const from = qs.get('from'); if (from) setVal('fFrom', isoToLocalInput(from));
+  const to = qs.get('to'); if (to) setVal('fTo', isoToLocalInput(to));
+  setVal('fKeyword', qs.get('keyword') || '');
+  const size = qs.get('size'); if (size) setVal('pageSize', size);
+  const sort = qs.get('sort');
+  if (sort) {
+    const parts = sort.split(',');
+    setVal('sortProp', parts[0] || 'createdAt');
+    setVal('sortDir', parts[1] || 'desc');
+  }
+  updateSortIndicators();
+  const pageStr = qs.get('page');
+  const page = pageStr != null ? parseInt(pageStr, 10) : 0;
+  return Number.isFinite(page) && page >= 0 ? page : 0;
+}
+function syncUrlFromUI(page = 0) {
+  const params = buildParams(page);
+  const qs = params.toString();
+  const newUrl = `${location.pathname}?${qs}`;
+  window.history.replaceState(null, '', newUrl);
+}
+
+function clearFilters() {
+  ['fActor','fEntityType','fEntityId','fAction','fFrom','fTo','fKeyword'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const sortPropEl = document.getElementById('sortProp');
+  const sortDirEl = document.getElementById('sortDir');
+  if (sortPropEl) sortPropEl.value = 'createdAt';
+  if (sortDirEl) sortDirEl.value = 'desc';
+  updateSortIndicators();
+  loadPage(0);
+}
+
+// 快捷筛选
+function toLocalDtStr(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+function quickAction(action) {
+  const el = document.getElementById('fAction');
+  if (el) el.value = action;
+  loadPage(0);
+}
+function quickTime(range) {
+  const now = new Date();
+  let from = now;
+  if (range === '24h') from = new Date(now.getTime() - 24*3600*1000);
+  if (range === '7d') from = new Date(now.getTime() - 7*24*3600*1000);
+  const fEl = document.getElementById('fFrom');
+  const tEl = document.getElementById('fTo');
+  if (fEl) fEl.value = toLocalDtStr(from);
+  if (tEl) tEl.value = toLocalDtStr(now);
+  loadPage(0);
+}
+function resetQuick() {
+  ['fAction','fFrom','fTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  loadPage(0);
+}
+function prevPage() { if (currentPage > 0) loadPage(currentPage - 1); }
+function nextPage() { if (currentPage < totalPages - 1) loadPage(currentPage + 1); }
+
+function updateSortIndicators() {
+  const propEl = document.getElementById('sortProp');
+  const dirEl = document.getElementById('sortDir');
+  const prop = propEl ? propEl.value : 'createdAt';
+  const dir = dirEl ? dirEl.value : 'desc';
+  const props = ['id','createdAt','actor','entityType','entityId','action'];
+  props.forEach(p => {
+    const ind = document.getElementById('sortInd-' + p);
+    if (ind) ind.textContent = (p === prop) ? (dir === 'desc' ? '▼' : '▲') : '';
+  });
+}
+function setSort(prop) {
+  const propEl = document.getElementById('sortProp');
+  const dirEl = document.getElementById('sortDir');
+  if (!propEl || !dirEl) return;
+  if (propEl.value === prop) {
+    dirEl.value = (dirEl.value === 'desc') ? 'asc' : 'desc';
+  } else {
+    propEl.value = prop;
+    dirEl.value = 'desc';
+  }
+  updateSortIndicators();
+  loadPage(0);
+}
+
+function exportCsv() {
+  const params = buildParams();
+  // 导出接口无需 page/size
+  params.delete('page');
+  params.delete('size');
+  const url = `${API_BASE}/export?${params.toString()}`;
+  window.open(url, '_blank');
+}
+
+function exportCurrentCsv() {
+  const colsAll = ['id','createdAt','actor','entityType','entityId','action','details'];
+  const headerMap = { id:'ID', createdAt:'时间', actor:'操作者', entityType:'实体类型', entityId:'实体ID', action:'动作', details:'详情' };
+  const cols = colsAll.filter(c => (document.getElementById('col-'+c)?.checked));
+  if (cols.length === 0) { alert('请至少选择一个列'); return; }
+  const rows = lastLogs || [];
+  const header = cols.map(c => headerMap[c]);
+  const dataRows = rows.map(item => cols.map(c => {
+    if (c === 'createdAt') return fmtTime(item.createdAt ?? '');
+    const v = item[c] ?? '';
+    return String(v).replace(/\r?\n/g, ' ');
+  }));
+  const csvLines = [header].concat(dataRows).map(row => row.map(cell => {
+    const s = String(cell);
+    const needQuote = /[",\n]/.test(s);
+    const escaped = s.replace(/"/g, '""');
+    return needQuote ? `"${escaped}"` : escaped;
+  }).join(',')).join('\n');
+  const bom = new Uint8Array([0xEF,0xBB,0xBF]);
+  const blob = new Blob([bom, csvLines], { type:'text/csv;charset=utf-8;' });
+  const fnEl = document.getElementById('exportFilename');
+  const filename = (fnEl && fnEl.value.trim()) ? fnEl.value.trim() : 'operation-logs.csv';
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+}
+function highlightJson(jsonStr){
+  const esc = escapeHtml(jsonStr);
+  return esc
+    .replace(/(&quot;.*?&quot;)(\s*:\s*)/g, '<span class="json-key">$1</span>$2')
+    .replace(/:\s*(&quot;.*?&quot;)/g, ': <span class="json-str">$1</span>')
+    .replace(/:\s*(\d+(?:\.\d+)?)/g, ': <span class="json-num">$1</span>')
+    .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
+    .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+}
+function openDetail(i) {
+  const overlay = document.getElementById('detailOverlay');
+  const item = lastLogs[i];
+  if (!overlay || !item) return;
+  const createdAt = fmtTime(item.createdAt);
+  document.getElementById('detailCreatedAt').textContent = createdAt;
+  document.getElementById('detailActor').textContent = item.actor ?? '';
+  document.getElementById('detailAction').textContent = item.action ?? '';
+  document.getElementById('detailEntityType').textContent = item.entityType ?? '';
+  document.getElementById('detailEntityId').textContent = (item.entityId == null ? '' : item.entityId);
+  const raw = item.details ?? '';
+  let displayHtml = null;
+  try {
+    const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const pretty = JSON.stringify(obj, null, 2);
+    displayHtml = highlightJson(pretty);
+  } catch(e) {
+    displayHtml = escapeHtml(raw);
+  }
+  const pre = document.getElementById('detailText');
+  if (pre) { pre.innerHTML = displayHtml; }
+  overlay.classList.remove('hidden');
+  window._currentDetailText = `时间：${createdAt}\n操作者：${item.actor ?? ''}\n动作：${item.action ?? ''}\n实体类型：${item.entityType ?? ''}\n实体ID：${item.entityId == null ? '' : item.entityId}\n详情：\n${typeof raw === 'string' ? raw : JSON.stringify(raw)}`;
+}
+function closeDetail() {
+  const overlay = document.getElementById('detailOverlay');
+  if (overlay) overlay.classList.add('hidden');
+  window._currentDetailText = '';
+}
+async function copyDetails() {
+  const txt = window._currentDetailText || (document.getElementById('detailText')?.textContent || '');
+  try {
+    await navigator.clipboard.writeText(txt);
+    alert('已复制到剪贴板');
+  } catch (e) {
+    alert('复制失败：' + e.message);
+  }
+}
+
+// 初始化
+const initialPage = applyQueryToUI();
+loadPage(initialPage);
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
 </script>
 </body>
 </html>

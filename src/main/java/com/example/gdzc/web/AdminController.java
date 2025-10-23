@@ -63,4 +63,35 @@ public class AdminController {
         model.addAttribute("title", "操作日志管理");
         return "admin/operation-logs/index";
     }
+
+    @GetMapping("/spare-parts")
+    public String spareParts(Model model) {
+        model.addAttribute("title", "备件管理");
+        return "admin/spare-parts/index";
+    }
+
+    @GetMapping("/consumables")
+    public String consumables(Model model) {
+        model.addAttribute("title", "耗材管理");
+        return "admin/consumables/index";
+    }
+
+    @GetMapping("/knowledge")
+    public String knowledge(Model model) {
+        model.addAttribute("title", "故障知识库");
+        return "admin/knowledge/index";
+    }
+
+    @GetMapping("/equipment-docs")
+    public String equipmentDocs(Model model) {
+        model.addAttribute("title", "设备文档");
+        return "admin/equipment-docs/index";
+    }
+
+    // 新增：用户管理页面路由
+    @GetMapping("/users")
+    public String users(Model model) {
+        model.addAttribute("title", "用户管理");
+        return "admin/users/index";
+    }
 }

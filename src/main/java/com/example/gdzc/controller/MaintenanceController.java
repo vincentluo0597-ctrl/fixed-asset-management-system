@@ -1,7 +1,9 @@
 package com.example.gdzc.controller;
 
 import com.example.gdzc.domain.MaintenanceRecord;
+import com.example.gdzc.dto.MaintenanceCreateWithPartsDTO;
 import com.example.gdzc.service.MaintenanceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,5 +58,11 @@ public class MaintenanceController {
     @PostMapping
     public ResponseEntity<MaintenanceRecord> create(@RequestBody MaintenanceRecord record) {
         return ResponseEntity.ok(maintenanceService.create(record));
+    }
+
+    @PostMapping("/create-with-parts")
+    public ResponseEntity<Map<String, Object>> createWithParts(@Valid @RequestBody MaintenanceCreateWithPartsDTO dto) {
+        Map<String, Object> result = maintenanceService.createWithSpareParts(dto);
+        return ResponseEntity.ok(result);
     }
 }

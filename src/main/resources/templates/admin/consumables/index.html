@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>耗材管理 - 资产管理后台</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
+        header { background: #1677ff; color: #fff; padding: 14px 20px; }
+        header h1 { margin:0; font-size: 18px; }
+        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
+        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
+        main { padding: 20px; }
+        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; font-size: 12px; }
+        th { background: #fafafa; }
+        .toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+        button { padding: 8px 12px; background: #1677ff; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        button.secondary { background: #555; }
+        .pagination { margin-top: 10px; display: flex; gap: 6px; align-items: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .danger { color: #ff4d4f; }
+    </style>
+    <script>
+        let currentPage = 0;
+        let pageSize = 10;
+
+        async function loadConsumables(page = 0) {
+            currentPage = page;
+            const keyword = document.getElementById('keyword').value.trim();
+            const lowStockOnly = document.getElementById('lowStockOnly').checked;
+            const params = new URLSearchParams({ page, size: pageSize });
+            if (keyword) params.append('keyword', keyword);
+            if (lowStockOnly) params.append('lowStockOnly', 'true');
+            const res = await fetch(`/api/consumables/page?${params.toString()}`);
+            const pageData = await res.json();
+            const tbody = document.querySelector('#consumables-tbody');
+            tbody.innerHTML = '';
+            pageData.content.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${c.id ?? ''}</td>
+                    <td>${c.code ?? ''}</td>
+                    <td>${c.name ?? ''}</td>
+                    <td>${c.unit ?? ''}</td>
+                    <td>${c.lifeType ?? ''}</td>
+                    <td>${c.lifeValue ?? ''}</td>
+                    <td>${c.safetyStock ?? 0}</td>
+                    <td class='${(c.totalStock ?? 0) < (c.safetyStock ?? 0) ? 'danger' : ''}'>${c.totalStock ?? 0}</td>
+                    <td>${c.defaultLocationId ?? ''}</td>
+                    <td><button onclick='openReplacementForm(${c.id})'>登记更换</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('page-info').textContent = `第 ${pageData.number + 1} / ${pageData.totalPages} 页，共 ${pageData.totalElements} 条`;
+            document.getElementById('btn-prev').disabled = pageData.first;
+            document.getElementById('btn-next').disabled = pageData.last;
+        }
+
+        function openReplacementForm(consumableId) {
+            document.getElementById('rep-consumable-id').value = consumableId;
+            document.getElementById('rep-equipment-id').value = '';
+            document.getElementById('rep-usage-value').value = '';
+            document.getElementById('rep-note').value = '';
+            document.getElementById('replacement-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function submitReplacement() {
+            const consumableId = document.getElementById('rep-consumable-id').value;
+            const equipmentId = document.getElementById('rep-equipment-id').value;
+            const usageValue = document.getElementById('rep-usage-value').value;
+            const note = document.getElementById('rep-note').value.trim();
+            if (!consumableId || !equipmentId) { alert('请填写耗材ID与设备ID'); return; }
+            const params = new URLSearchParams();
+            params.append('consumableId', consumableId);
+            params.append('equipmentId', equipmentId);
+            if (usageValue) params.append('usageValue', usageValue);
+            if (note) params.append('note', note);
+            const res = await fetch(`/api/consumables/replacement`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+            if (!res.ok) {
+                const text = await res.text();
+                alert('登记失败：' + text);
+            } else {
+                const record = await res.json();
+                alert('登记成功，下一次到期：' + (record.nextDueAt ?? '未知'));
+                loadConsumables(currentPage);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadConsumables(0);
+        });
+    </script>
+</head>
+<body>
+<header>
+    <h1>资产管理后台</h1>
+    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
+    <div style="clear:both"></div>
+</header>
+<nav>
+    <a href="/admin">仪表盘</a>
+    <a href="/admin/spare-parts">备件管理</a>
+    <a href="/admin/consumables">耗材管理</a>
+    <a href="/admin/equipment-docs">设备文档</a>
+    <a href="/admin/knowledge">故障知识库</a>
+    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
+</nav>
+<main>
+    <div class="card">
+        <div class="toolbar">
+            <input id="keyword" type="text" placeholder="按名称/编码搜索">
+            <label><input type="checkbox" id="lowStockOnly"> 仅显示低库存</label>
+            <button onclick="loadConsumables(0)">搜索</button>
+            <span style="flex:1"></span>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>编码</th>
+                <th>名称</th>
+                <th>单位</th>
+                <th>寿命类型</th>
+                <th>寿命值</th>
+                <th>安全库存</th>
+                <th>总库存</th>
+                <th>默认库位</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="consumables-tbody"></tbody>
+        </table>
+        <div class="pagination">
+            <button id="btn-prev" onclick="loadConsumables(Math.max(0, currentPage-1))">上一页</button>
+            <span id="page-info">第 1 / 1 页</span>
+            <button id="btn-next" onclick="loadConsumables(currentPage+1)">下一页</button>
+        </div>
+    </div>
+
+    <div class="card" id="replacement-card">
+        <h3>登记耗材更换</h3>
+        <div class="grid">
+            <div>
+                <label>耗材ID</label>
+                <input id="rep-consumable-id" placeholder="耗材ID">
+            </div>
+            <div>
+                <label>设备ID</label>
+                <input id="rep-equipment-id" placeholder="设备ID">
+            </div>
+            <div>
+                <label>使用值（可选）</label>
+                <input id="rep-usage-value" type="number" placeholder="如：运行小时或里程">
+            </div>
+            <div>
+                <label>备注</label>
+                <input id="rep-note" placeholder="备注">
+            </div>
+        </div>
+        <div style="margin-top:10px">
+            <button onclick="submitReplacement()">提交登记</button>
+        </div>
+    </div>
+</main>
+</body>
+</html>

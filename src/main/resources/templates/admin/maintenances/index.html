@@ -152,6 +152,48 @@
   </form>
 </div>
 
+<div class="card">
+  <h2>创建维修工单并领用备件（自动检查库存，支持实时扣减）</h2>
+  <form id="createWithPartsForm" onsubmit="return submitCreateWithParts(event)">
+    <div class="form-grid">
+      <div class="form-item">
+        <label>设备ID（必填）</label>
+        <input type="number" id="cwpEquipmentId" required>
+        <div style="margin-top:6px;"><button type="button" onclick="fillCwpFromSelected()">使用已选设备</button></div>
+      </div>
+      <div class="form-item" style="grid-column: span 2;">
+        <label>维修描述（必填）</label>
+        <input type="text" id="cwpDescription" required placeholder="例如：更换风扇，检查线路">
+      </div>
+      <div class="form-item">
+        <label><input type="checkbox" id="cwpDeductStock" checked> 创建时实时扣减库存</label>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <table style="width:100%;">
+        <thead>
+          <tr>
+            <th style="width:20%">备件ID</th>
+            <th style="width:20%">库位ID（可选）</th>
+            <th style="width:20%">数量</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="cwpPartsBody"></tbody>
+      </table>
+      <div style="margin-top:8px;"><button type="button" onclick="addCwpLine()">添加备件行</button></div>
+    </div>
+
+    <div class="actions" style="margin-top:10px;">
+      <button type="submit">创建工单并处理备件</button>
+    </div>
+    <div id="cwpMsg" class="hidden"></div>
+    <div style="margin-top:8px; font-size:12px; color:#888;">接口：POST /api/maintenances/create-with-parts（Body: { equipmentId, description, deductStock, usedParts:[{ partId, locationId?, quantity }] }）</div>
+    <div id="cwpResult" style="margin-top:8px;"></div>
+  </form>
+</div>
+
 <script>
 const API_BASE = '/api';
 let currentPage = 0;

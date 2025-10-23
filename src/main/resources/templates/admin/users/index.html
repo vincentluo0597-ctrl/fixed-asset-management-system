@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>用户管理</title>
+    <link rel="stylesheet" href="/static/css/admin.css" />
+    <style>
+        /* 页面特定补充样式 */
+        .roles-inline { display:flex; gap:10px; flex-wrap:wrap; }
+        .card-title { display:flex; align-items:center; justify-content:space-between; }
+        .container { padding: 16px; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+    <div class="card">
+        <div class="card-title">
+            <h2 class="section-title">用户管理</h2>
+            <div>
+                <span id="status" class="success"></span>
+                <span id="error" class="error"></span>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="reloadPage(0)"><span class="icon"><svg viewBox="0 0 24 24"><path d="M12 5v2a5 5 0 1 1-4.9 6h-2A7 7 0 1 0 12 5zm7 1h-6v2h3.59L13 11.59l1.41 1.41L18 9.41V13h2z"></path></svg></span>刷新</button>
+            <span class="muted">每页</span>
+            <select id="pageSize" onchange="reloadPage(0)">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+            </select>
+            <label class="muted" style="margin-left:12px"><input type="checkbox" id="stripedToggle" checked onchange="toggleTableClass()" /> 斑马条纹</label>
+            <label class="muted"><input type="checkbox" id="compactToggle" onchange="toggleTableClass()" /> 紧凑模式</label>
+            <div class="spacer"></div>
+        </div>
+
+        <div id="createPanel" class="card" style="margin-bottom:12px">
+            <h3 class="section-title">创建用户</h3>
+            <div class="grid-3">
+                <div class="form-item">
+                    <label class="muted">用户名</label>
+                    <input id="c_username" type="text" placeholder="用户名" />
+                </div>
+                <div class="form-item">
+                    <label class="muted">显示名称</label>
+                    <input id="c_displayName" type="text" placeholder="显示名称（可选）" />
+                </div>
+                <div class="form-item">
+                    <label class="muted">密码</label>
+                    <input id="c_password" type="password" placeholder="密码" />
+                </div>
+                <div class="form-item" style="grid-column: 1 / span 3">
+                    <label class="muted">角色</label>
+                    <div class="roles-inline">
+                        <label class="badge role-admin"><input type="checkbox" name="c_roles" value="ADMIN" /> ADMIN</label>
+                        <label class="badge role-maintainer"><input type="checkbox" name="c_roles" value="MAINTAINER" /> MAINTAINER</label>
+                        <label class="badge role-viewer"><input type="checkbox" name="c_roles" value="VIEWER" /> VIEWER</label>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-success" onclick="createUser()">创建</button>
+                <button class="btn btn-secondary" onclick="resetCreateForm()">清空</button>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="margin-top:8px">用户列表</h3>
+        <table id="userTable" class="table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>显示名称</th>
+                <th>角色</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="userTbody"></tbody>
+        </table>
+        <div class="toolbar page-controls" style="justify-content:flex-end">
+            <button id="prevBtn" class="btn btn-secondary" onclick="prevPage()">上一页</button>
+            <span id="pageInfo" class="page-info"></span>
+            <button id="nextBtn" class="btn btn-secondary" onclick="nextPage()">下一页</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPage = 0;
+let totalPages = 0;
+
+function setMsg(ok, msg) {
+    const s = document.getElementById('status');
+    const e = document.getElementById('error');
+    s.textContent = ok ? msg : '';
+    e.textContent = ok ? '' : msg;
+}
+
+async function reloadPage(page) {
+    try {
+        const size = parseInt(document.getElementById('pageSize').value, 10) || 20;
+        const resp = await fetch(`/api/admin/users/page?page=${page}&size=${size}`);
+        if (!resp.ok) throw new Error(`加载失败: ${resp.status}`);
+        const data = await resp.json();
+        renderTable(data.content);
+        currentPage = data.number;
+        totalPages = data.totalPages;
+        document.getElementById('pageInfo').textContent = `第 ${currentPage + 1} / ${totalPages} 页，总计 ${data.totalElements} 条`;
+        document.getElementById('prevBtn').disabled = currentPage <= 0;
+        document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
+        setMsg(true, '加载成功');
+    } catch (err) {
+        console.error(err);
+        setMsg(false, err.message || '请求失败');
+    }
+}
+
+function prevPage() { if (currentPage > 0) reloadPage(currentPage - 1); }
+function nextPage() { if (currentPage < totalPages - 1) reloadPage(currentPage + 1); }
+
+function roleBadges(roles) {
+    if (!roles || roles.length === 0) return '';
+    return roles.map(r => {
+        let cls = 'role-default';
+        if (r === 'ADMIN') cls = 'role-admin';
+        else if (r === 'MAINTAINER') cls = 'role-maintainer';
+        else if (r === 'VIEWER') cls = 'role-viewer';
+        return `<span class="badge ${cls}">${r}</span>`;
+    }).join('');
+}
+
+function toggleTableClass() {
+    const table = document.getElementById('userTable');
+    table.classList.toggle('table-striped', document.getElementById('stripedToggle').checked);
+    table.classList.toggle('table-compact', document.getElementById('compactToggle').checked);
+}
+
+function renderTable(rows) {
+    const tbody = document.getElementById('userTbody');
+    tbody.innerHTML = '';
+    (rows || []).forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${u.id}</td>
+            <td>${escapeHtml(u.username)}</td>
+            <td>${escapeHtml(u.displayName || '')}</td>
+            <td>${roleBadges(u.roles || [])}</td>
+            <td>${u.createdAt || ''}</td>
+            <td class="actions">
+                <button class="btn btn-secondary" onclick="openEdit(${u.id}, '${encodeURIComponent(u.displayName || '')}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm18.71-11.04a1 1 0 0 0 0-1.41l-2.51-2.51a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.99-1.66z"></path></svg></span>编辑</button>
+                <button class="btn btn-danger" onclick="deleteUser(${u.id})"><span class="icon"><svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm7-3h-2l-1 1H7v2h10V5h-3l-1-1z"></path></svg></span>删除</button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function escapeHtml(str) { return String(str).replace(/[&<>\"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[s])); }
+function getCheckedRoles(name) { return Array.from(document.querySelectorAll(`input[name='${name}']:checked`)).map(i => i.value); }
+
+function resetCreateForm() {
+    document.getElementById('c_username').value = '';
+    document.getElementById('c_displayName').value = '';
+    document.getElementById('c_password').value = '';
+    document.querySelectorAll("input[name='c_roles']").forEach(i => i.checked = false);
+}
+
+async function createUser() {
+    try {
+        const username = document.getElementById('c_username').value.trim();
+        const displayName = document.getElementById('c_displayName').value.trim();
+        const password = document.getElementById('c_password').value;
+        const roles = getCheckedRoles('c_roles');
+        if (!username) throw new Error('用户名不能为空');
+        if (!password) throw new Error('密码不能为空');
+        if (!roles.length) throw new Error('至少选择一个角色');
+        const body = { username, password, displayName: displayName || null, roles };
+        const resp = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!resp.ok) { const txt = await resp.text(); throw new Error(`创建失败: ${resp.status} ${txt}`); }
+        setMsg(true, '创建成功');
+        resetCreateForm();
+        reloadPage(currentPage);
+    } catch (err) { console.error(err); setMsg(false, err.message || '创建失败'); }
+}
+
+function openEdit(id, displayNameEnc) {
+    const displayName = decodeURIComponent(displayNameEnc || '');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td colspan="6">
+            <div class="grid-3">
+                <div class="form-item">
+                    <label class="muted">显示名称</label>
+                    <input id="e_displayName_${id}" type="text" value="${escapeHtml(displayName)}" />
+                </div>
+                <div class="form-item">
+                    <label class="muted">新密码（可选）</label>
+                    <input id="e_password_${id}" type="password" placeholder="留空则不修改" />
+                </div>
+                <div class="form-item" style="grid-column: 1 / span 3">
+                    <label class="muted">角色（若设置则覆盖）</label>
+                    <div class="roles-inline">
+                        <label class="badge role-admin"><input type="checkbox" name="e_roles_${id}" value="ADMIN" /> ADMIN</label>
+                        <label class="badge role-maintainer"><input type="checkbox" name="e_roles_${id}" value="MAINTAINER" /> MAINTAINER</label>
+                        <label class="badge role-viewer"><input type="checkbox" name="e_roles_${id}" value="VIEWER" /> VIEWER</label>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-success" onclick="applyEdit(${id})">保存</button>
+                <button class="btn btn-ghost" onclick="reloadPage(currentPage)">取消</button>
+            </div>
+        </td>`;
+    const tbody = document.getElementById('userTbody');
+    tbody.insertBefore(row, tbody.firstChild);
+}
+
+async function applyEdit(id) {
+    try {
+        const displayName = document.getElementById(`e_displayName_${id}`).value.trim();
+        const password = document.getElementById(`e_password_${id}`).value;
+        const roles = Array.from(document.querySelectorAll(`input[name='e_roles_${id}']:checked`)).map(i => i.value);
+        const body = {};
+        if (displayName) body.displayName = displayName;
+        if (password) body.password = password;
+        if (roles.length) body.roles = roles;
+        const resp = await fetch(`/api/admin/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!resp.ok) { const txt = await resp.text(); throw new Error(`更新失败: ${resp.status} ${txt}`); }
+        setMsg(true, '更新成功');
+        reloadPage(currentPage);
+    } catch (err) { console.error(err); setMsg(false, err.message || '更新失败'); }
+}
+
+async function deleteUser(id) {
+    if (!confirm('确认删除该用户？')) return;
+    try {
+        const resp = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+        if (!resp.ok && resp.status !== 204) { const txt = await resp.text(); throw new Error(`删除失败: ${resp.status} ${txt}`); }
+        setMsg(true, '删除成功');
+        reloadPage(currentPage);
+    } catch (err) { console.error(err); setMsg(false, err.message || '删除失败'); }
+}
+
+window.addEventListener('DOMContentLoaded', () => { reloadPage(0); toggleTableClass(); });
+</script>
+</body>
+</html>
