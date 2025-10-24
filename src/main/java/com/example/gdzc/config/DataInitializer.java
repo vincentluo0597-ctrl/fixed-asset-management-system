@@ -18,7 +18,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 创建默认管理员
+        // 创建默认管理员（首次启动）
         String username = "admin";
         if (userRepository.findByUsername(username).isEmpty()) {
             User admin = User.builder()
@@ -28,7 +28,7 @@ public class DataInitializer implements CommandLineRunner {
                     .roles(Set.of(UserRole.SUPER_ADMIN))
                     .build();
             userRepository.save(admin);
-            System.out.println("[DataInitializer] 默认管理员已创建: admin / Admin@123");
+            // 删除默认凭据输出，避免泄露账号信息
         }
     }
 }

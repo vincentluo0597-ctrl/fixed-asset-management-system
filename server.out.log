@@ -1,0 +1,667 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.6)
+
+2025-10-24 14:18:12.653 INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.3.Final
+2025-10-24 14:18:12.723 INFO  c.example.gdzc.JavaGdzcApplication - Starting JavaGdzcApplication v0.0.1-SNAPSHOT using Java 25 with PID 22888 (C:\Users\Administrator\Desktop\Java_gdzc\target\java-gdzc-0.0.1-SNAPSHOT.jar started by Administrator in C:\Users\Administrator\Desktop\Java_gdzc)
+2025-10-24 14:18:12.725 INFO  c.example.gdzc.JavaGdzcApplication - No active profile set, falling back to 1 default profile: "default"
+2025-10-24 14:18:14.352 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-10-24 14:18:14.479 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 115 ms. Found 21 JPA repository interfaces.
+2025-10-24 14:18:15.239 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 13697 (http)
+2025-10-24 14:18:15.261 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-0.0.0.0-13697"]
+2025-10-24 14:18:15.263 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-10-24 14:18:15.264 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.46]
+2025-10-24 14:18:15.310 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-10-24 14:18:15.311 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2513 ms
+2025-10-24 14:18:15.534 DEBUG o.s.w.f.ServerHttpObservationFilter - Filter 'webMvcObservationFilter' configured for use
+2025-10-24 14:18:15.647 DEBUG com.zaxxer.hikari.HikariConfig - Class com.mysql.cj.jdbc.Driver found in Thread context class loader org.springframework.boot.loader.launch.LaunchedClassLoader@28a418fc
+2025-10-24 14:18:15.970 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Scanning for classpath resources at 'classpath:db/callback' ...
+2025-10-24 14:18:15.971 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Determining location urls for classpath:db/callback using ClassLoader org.springframework.boot.loader.launch.LaunchedClassLoader@28a418fc ...
+2025-10-24 14:18:15.971 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Unable to resolve location classpath:db/callback.
+2025-10-24 14:18:15.971 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Scanning for classpath resources at 'classpath:db/migration' ...
+2025-10-24 14:18:15.971 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Determining location urls for classpath:db/migration using ClassLoader org.springframework.boot.loader.launch.LaunchedClassLoader@28a418fc ...
+2025-10-24 14:18:15.972 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Scanning URL: jar:nested:/C:/Users/Administrator/Desktop/Java_gdzc/target/java-gdzc-0.0.1-SNAPSHOT.jar/!BOOT-INF/classes/!/db/migration
+2025-10-24 14:18:15.976 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/
+2025-10-24 14:18:15.976 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V10__fix_charset_logs_locations.sql
+2025-10-24 14:18:15.976 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V11__ensure_utf8mb4_all.sql
+2025-10-24 14:18:15.977 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V12__users_and_roles.sql
+2025-10-24 14:18:15.977 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V13__locations_hierarchy.sql
+2025-10-24 14:18:15.977 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V14__locations_set_root_level.sql
+2025-10-24 14:18:15.977 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V15__create_suppliers.sql
+2025-10-24 14:18:15.977 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V16__create_equipment_categories.sql
+2025-10-24 14:18:15.978 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V17__create_inventory_records.sql
+2025-10-24 14:18:15.978 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V18__alter_equipment_add_columns.sql
+2025-10-24 14:18:15.978 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V19__add_foreign_keys_and_indexes.sql
+2025-10-24 14:18:15.978 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V1__init_locations.sql
+2025-10-24 14:18:15.978 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V20__equipment_categories_set_root_level.sql
+2025-10-24 14:18:15.978 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V21__alter_equipment_add_quantity.sql
+2025-10-24 14:18:15.978 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V22__create_equipment_transfers.sql
+2025-10-24 14:18:15.979 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V23__inventory_adjust_fields.sql
+2025-10-24 14:18:15.979 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V24__repair_missing_transfers_table.sql
+2025-10-24 14:18:15.979 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V25__spare_consumables_knowledge.sql
+2025-10-24 14:18:15.979 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V2__operation_logs.sql
+2025-10-24 14:18:15.979 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V3__equipment.sql
+2025-10-24 14:18:15.980 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V4__inventory_records.sql
+2025-10-24 14:18:15.980 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V5__borrow_records.sql
+2025-10-24 14:18:15.980 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V6__placement_logs.sql
+2025-10-24 14:18:15.980 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V7__maintenance_records.sql
+2025-10-24 14:18:15.980 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V8__scrap_records.sql
+2025-10-24 14:18:15.980 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V9__charset_utf8mb4.sql
+2025-10-24 14:18:15.981 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Scanning for classes at classpath:db/migration
+2025-10-24 14:18:15.983 DEBUG o.s.j.d.SimpleDriverDataSource - Creating new JDBC Driver Connection to [jdbc:mysql://127.0.0.1:3306/gdzc?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8]
+2025-10-24 14:18:16.319 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.321 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V15__create_suppliers.sql
+2025-10-24 14:18:16.323 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V18__alter_equipment_add_columns.sql
+2025-10-24 14:18:16.325 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V13__locations_hierarchy.sql
+2025-10-24 14:18:16.326 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V5__borrow_records.sql
+2025-10-24 14:18:16.326 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V24__repair_missing_transfers_table.sql
+2025-10-24 14:18:16.327 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V11__ensure_utf8mb4_all.sql
+2025-10-24 14:18:16.327 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V21__alter_equipment_add_quantity.sql
+2025-10-24 14:18:16.327 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V19__add_foreign_keys_and_indexes.sql
+2025-10-24 14:18:16.327 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V14__locations_set_root_level.sql
+2025-10-24 14:18:16.328 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V3__equipment.sql
+2025-10-24 14:18:16.328 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V7__maintenance_records.sql
+2025-10-24 14:18:16.328 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V1__init_locations.sql
+2025-10-24 14:18:16.329 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V17__create_inventory_records.sql
+2025-10-24 14:18:16.329 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V16__create_equipment_categories.sql
+2025-10-24 14:18:16.329 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V12__users_and_roles.sql
+2025-10-24 14:18:16.329 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V22__create_equipment_transfers.sql
+2025-10-24 14:18:16.330 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V2__operation_logs.sql
+2025-10-24 14:18:16.330 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V23__inventory_adjust_fields.sql
+2025-10-24 14:18:16.330 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V4__inventory_records.sql
+2025-10-24 14:18:16.330 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V25__spare_consumables_knowledge.sql
+2025-10-24 14:18:16.331 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V20__equipment_categories_set_root_level.sql
+2025-10-24 14:18:16.331 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V6__placement_logs.sql
+2025-10-24 14:18:16.331 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V8__scrap_records.sql
+2025-10-24 14:18:16.331 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V9__charset_utf8mb4.sql
+2025-10-24 14:18:16.332 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V10__fix_charset_logs_locations.sql
+2025-10-24 14:18:16.352 INFO  org.flywaydb.core.FlywayExecutor - Database: jdbc:mysql://127.0.0.1:3306/gdzc?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8 (MySQL 8.0)
+2025-10-24 14:18:16.353 DEBUG org.flywaydb.core.FlywayExecutor - Database Type: MySQL
+2025-10-24 14:18:16.354 DEBUG org.flywaydb.core.FlywayExecutor - Driver: MySQL Connector/J mysql-connector-j-9.4.0 (Revision: d680767849154c8e136dfc3d8a0ae4d9fefd1fb7)
+2025-10-24 14:18:16.354 DEBUG org.flywaydb.core.FlywayExecutor - DDL Transactions Supported: false
+2025-10-24 14:18:16.357 DEBUG o.f.c.i.s.SchemaHistoryFactory - Schemas: gdzc
+2025-10-24 14:18:16.359 DEBUG o.f.c.i.s.SchemaHistoryFactory - Default schema: null
+2025-10-24 14:18:16.376 DEBUG org.flywaydb.core.FlywayExecutor - Scanning for script callbacks ...
+2025-10-24 14:18:16.380 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.384 DEBUG o.f.c.i.c.SqlScriptCallbackFactory - Scanning for SQL callbacks ...
+2025-10-24 14:18:16.385 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.398 DEBUG o.f.c.a.c.ClassicConfiguration - CherryPickConfigurationExtension not found
+2025-10-24 14:18:16.404 DEBUG o.f.c.a.c.ClassicConfiguration - CherryPickConfigurationExtension not found
+2025-10-24 14:18:16.434 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Repair of failed migration in Schema History table `gdzc`.`flyway_schema_history` not necessary. No failed migration detected.
+2025-10-24 14:18:16.436 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.460 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.460 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.460 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.461 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.461 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.461 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.461 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.462 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.462 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.462 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.462 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.462 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.463 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.463 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.463 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.463 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.463 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.464 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.464 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.464 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.464 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.465 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.465 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.465 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.465 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.465 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.466 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.467 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.467 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.467 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.467 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.467 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.467 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.468 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.468 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.468 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.468 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.468 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.469 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.469 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.469 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.469 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.469 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.469 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.470 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.470 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.470 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.470 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.470 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.470 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.470 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.471 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.471 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.473 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.473 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.473 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.473 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.473 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.474 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.474 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.474 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.474 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.474 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.474 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.474 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.475 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.475 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.475 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.475 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.475 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.475 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.475 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.476 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.476 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.476 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.476 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.476 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.476 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.477 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.477 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.477 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.477 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.477 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.477 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.478 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.478 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.478 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.478 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.479 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.479 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.479 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.479 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.479 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.479 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.479 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.480 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.480 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.480 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.480 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.480 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.480 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.480 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.481 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.481 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.481 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.490 INFO  o.f.core.internal.command.DbRepair - Successfully repaired schema history table `gdzc`.`flyway_schema_history` (execution time 00:00.086s).
+2025-10-24 14:18:16.497 DEBUG org.flywaydb.core.FlywayExecutor - Memory usage: 28 of 74M
+2025-10-24 14:18:16.498 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Scanning for classpath resources at 'classpath:db/migration' ...
+2025-10-24 14:18:16.498 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Determining location urls for classpath:db/migration using ClassLoader org.springframework.boot.loader.launch.LaunchedClassLoader@28a418fc ...
+2025-10-24 14:18:16.499 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Scanning URL: jar:nested:/C:/Users/Administrator/Desktop/Java_gdzc/target/java-gdzc-0.0.1-SNAPSHOT.jar/!BOOT-INF/classes/!/db/migration
+2025-10-24 14:18:16.499 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/
+2025-10-24 14:18:16.499 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V10__fix_charset_logs_locations.sql
+2025-10-24 14:18:16.499 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V11__ensure_utf8mb4_all.sql
+2025-10-24 14:18:16.499 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V12__users_and_roles.sql
+2025-10-24 14:18:16.500 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V13__locations_hierarchy.sql
+2025-10-24 14:18:16.500 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V14__locations_set_root_level.sql
+2025-10-24 14:18:16.500 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V15__create_suppliers.sql
+2025-10-24 14:18:16.500 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V16__create_equipment_categories.sql
+2025-10-24 14:18:16.500 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V17__create_inventory_records.sql
+2025-10-24 14:18:16.501 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V18__alter_equipment_add_columns.sql
+2025-10-24 14:18:16.501 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V19__add_foreign_keys_and_indexes.sql
+2025-10-24 14:18:16.501 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V1__init_locations.sql
+2025-10-24 14:18:16.501 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V20__equipment_categories_set_root_level.sql
+2025-10-24 14:18:16.501 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V21__alter_equipment_add_quantity.sql
+2025-10-24 14:18:16.501 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V22__create_equipment_transfers.sql
+2025-10-24 14:18:16.502 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V23__inventory_adjust_fields.sql
+2025-10-24 14:18:16.502 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V24__repair_missing_transfers_table.sql
+2025-10-24 14:18:16.502 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V25__spare_consumables_knowledge.sql
+2025-10-24 14:18:16.502 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V2__operation_logs.sql
+2025-10-24 14:18:16.502 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V3__equipment.sql
+2025-10-24 14:18:16.503 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V4__inventory_records.sql
+2025-10-24 14:18:16.503 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V5__borrow_records.sql
+2025-10-24 14:18:16.503 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V6__placement_logs.sql
+2025-10-24 14:18:16.503 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V7__maintenance_records.sql
+2025-10-24 14:18:16.503 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V8__scrap_records.sql
+2025-10-24 14:18:16.503 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Found resource: db/migration/V9__charset_utf8mb4.sql
+2025-10-24 14:18:16.503 DEBUG o.f.c.i.s.classpath.ClassPathScanner - Scanning for classes at classpath:db/migration
+2025-10-24 14:18:16.504 DEBUG o.s.j.d.SimpleDriverDataSource - Creating new JDBC Driver Connection to [jdbc:mysql://127.0.0.1:3306/gdzc?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8]
+2025-10-24 14:18:16.507 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.508 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V15__create_suppliers.sql
+2025-10-24 14:18:16.508 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V18__alter_equipment_add_columns.sql
+2025-10-24 14:18:16.508 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V13__locations_hierarchy.sql
+2025-10-24 14:18:16.508 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V5__borrow_records.sql
+2025-10-24 14:18:16.509 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V24__repair_missing_transfers_table.sql
+2025-10-24 14:18:16.509 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V11__ensure_utf8mb4_all.sql
+2025-10-24 14:18:16.509 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V21__alter_equipment_add_quantity.sql
+2025-10-24 14:18:16.509 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V19__add_foreign_keys_and_indexes.sql
+2025-10-24 14:18:16.509 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V14__locations_set_root_level.sql
+2025-10-24 14:18:16.509 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V3__equipment.sql
+2025-10-24 14:18:16.510 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V7__maintenance_records.sql
+2025-10-24 14:18:16.510 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V1__init_locations.sql
+2025-10-24 14:18:16.510 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V17__create_inventory_records.sql
+2025-10-24 14:18:16.510 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V16__create_equipment_categories.sql
+2025-10-24 14:18:16.510 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V12__users_and_roles.sql
+2025-10-24 14:18:16.510 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V22__create_equipment_transfers.sql
+2025-10-24 14:18:16.511 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V2__operation_logs.sql
+2025-10-24 14:18:16.511 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V23__inventory_adjust_fields.sql
+2025-10-24 14:18:16.511 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V4__inventory_records.sql
+2025-10-24 14:18:16.511 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V25__spare_consumables_knowledge.sql
+2025-10-24 14:18:16.511 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V20__equipment_categories_set_root_level.sql
+2025-10-24 14:18:16.512 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V6__placement_logs.sql
+2025-10-24 14:18:16.512 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V8__scrap_records.sql
+2025-10-24 14:18:16.512 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V9__charset_utf8mb4.sql
+2025-10-24 14:18:16.512 DEBUG o.f.c.i.r.ResourceNameValidator - Validating V10__fix_charset_logs_locations.sql
+2025-10-24 14:18:16.514 DEBUG org.flywaydb.core.FlywayExecutor - DDL Transactions Supported: false
+2025-10-24 14:18:16.515 DEBUG o.f.c.i.s.SchemaHistoryFactory - Schemas: gdzc
+2025-10-24 14:18:16.515 DEBUG o.f.c.i.s.SchemaHistoryFactory - Default schema: null
+2025-10-24 14:18:16.520 DEBUG org.flywaydb.core.FlywayExecutor - Scanning for script callbacks ...
+2025-10-24 14:18:16.520 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.522 DEBUG o.f.c.i.c.SqlScriptCallbackFactory - Scanning for SQL callbacks ...
+2025-10-24 14:18:16.522 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.526 DEBUG o.f.core.internal.command.DbValidate - Validating migrations ...
+2025-10-24 14:18:16.527 DEBUG o.f.c.a.c.ClassicConfiguration - CherryPickConfigurationExtension not found
+2025-10-24 14:18:16.528 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.533 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.534 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.534 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.534 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.534 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.534 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.535 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.535 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.535 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.535 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.535 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.535 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.536 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.536 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.536 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.536 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.536 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.536 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.536 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.537 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.537 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.537 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.537 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.537 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.537 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.537 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.538 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.538 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.538 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.538 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.539 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.539 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.539 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.539 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.539 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.540 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.541 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.542 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.542 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.543 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.543 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.543 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.543 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.543 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.543 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.543 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.544 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.544 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.544 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.544 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.544 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.544 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.544 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.545 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.546 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.546 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.546 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.546 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V15__create_suppliers.sql (filename: V15__create_suppliers.sql)
+2025-10-24 14:18:16.546 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V18__alter_equipment_add_columns.sql (filename: V18__alter_equipment_add_columns.sql)
+2025-10-24 14:18:16.546 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V13__locations_hierarchy.sql (filename: V13__locations_hierarchy.sql)
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V5__borrow_records.sql (filename: V5__borrow_records.sql)
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V24__repair_missing_transfers_table.sql (filename: V24__repair_missing_transfers_table.sql)
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V11__ensure_utf8mb4_all.sql (filename: V11__ensure_utf8mb4_all.sql)
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V21__alter_equipment_add_quantity.sql (filename: V21__alter_equipment_add_quantity.sql)
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V19__add_foreign_keys_and_indexes.sql (filename: V19__add_foreign_keys_and_indexes.sql)
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/ (filename: )
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V14__locations_set_root_level.sql (filename: V14__locations_set_root_level.sql)
+2025-10-24 14:18:16.547 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V3__equipment.sql (filename: V3__equipment.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V7__maintenance_records.sql (filename: V7__maintenance_records.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V1__init_locations.sql (filename: V1__init_locations.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V17__create_inventory_records.sql (filename: V17__create_inventory_records.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V16__create_equipment_categories.sql (filename: V16__create_equipment_categories.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V12__users_and_roles.sql (filename: V12__users_and_roles.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V22__create_equipment_transfers.sql (filename: V22__create_equipment_transfers.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V2__operation_logs.sql (filename: V2__operation_logs.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V23__inventory_adjust_fields.sql (filename: V23__inventory_adjust_fields.sql)
+2025-10-24 14:18:16.548 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V4__inventory_records.sql (filename: V4__inventory_records.sql)
+2025-10-24 14:18:16.549 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V25__spare_consumables_knowledge.sql (filename: V25__spare_consumables_knowledge.sql)
+2025-10-24 14:18:16.549 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V20__equipment_categories_set_root_level.sql (filename: V20__equipment_categories_set_root_level.sql)
+2025-10-24 14:18:16.549 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V6__placement_logs.sql (filename: V6__placement_logs.sql)
+2025-10-24 14:18:16.549 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V8__scrap_records.sql (filename: V8__scrap_records.sql)
+2025-10-24 14:18:16.549 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V9__charset_utf8mb4.sql (filename: V9__charset_utf8mb4.sql)
+2025-10-24 14:18:16.549 DEBUG o.f.core.internal.scanner.Scanner - Filtering out resource: db/migration/V10__fix_charset_logs_locations.sql (filename: V10__fix_charset_logs_locations.sql)
+2025-10-24 14:18:16.559 INFO  o.f.core.internal.command.DbValidate - Successfully validated 25 migrations (execution time 00:00.032s)
+2025-10-24 14:18:16.562 DEBUG o.f.core.internal.command.DbSchemas - Skipping creation of existing schema: `gdzc`
+2025-10-24 14:18:16.569 DEBUG o.f.c.a.c.ClassicConfiguration - CherryPickConfigurationExtension not found
+2025-10-24 14:18:16.573 INFO  o.f.core.internal.command.DbMigrate - Current version of schema `gdzc`: 25
+2025-10-24 14:18:16.587 INFO  o.f.core.internal.command.DbMigrate - Schema `gdzc` is up to date. No migration necessary.
+2025-10-24 14:18:16.590 DEBUG org.flywaydb.core.FlywayExecutor - Memory usage: 32 of 74M
+2025-10-24 14:18:16.672 INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-10-24 14:18:16.736 INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.29.Final
+2025-10-24 14:18:16.778 INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-10-24 14:18:17.136 INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-10-24 14:18:17.194 DEBUG com.zaxxer.hikari.HikariConfig - HikariPool-1 - configuration:
+2025-10-24 14:18:17.198 DEBUG com.zaxxer.hikari.HikariConfig - allowPoolSuspension.............false
+2025-10-24 14:18:17.199 DEBUG com.zaxxer.hikari.HikariConfig - autoCommit......................true
+2025-10-24 14:18:17.199 DEBUG com.zaxxer.hikari.HikariConfig - catalog.........................none
+2025-10-24 14:18:17.200 DEBUG com.zaxxer.hikari.HikariConfig - connectionInitSql...............none
+2025-10-24 14:18:17.200 DEBUG com.zaxxer.hikari.HikariConfig - connectionTestQuery.............none
+2025-10-24 14:18:17.202 DEBUG com.zaxxer.hikari.HikariConfig - connectionTimeout...............30000
+2025-10-24 14:18:17.202 DEBUG com.zaxxer.hikari.HikariConfig - credentials.....................com.zaxxer.hikari.util.Credentials@7146c6ea
+2025-10-24 14:18:17.203 DEBUG com.zaxxer.hikari.HikariConfig - dataSource......................none
+2025-10-24 14:18:17.203 DEBUG com.zaxxer.hikari.HikariConfig - dataSourceClassName.............none
+2025-10-24 14:18:17.203 DEBUG com.zaxxer.hikari.HikariConfig - dataSourceJNDI..................none
+2025-10-24 14:18:17.204 DEBUG com.zaxxer.hikari.HikariConfig - dataSourceProperties............{password=<masked>}
+2025-10-24 14:18:17.204 DEBUG com.zaxxer.hikari.HikariConfig - driverClassName................."com.mysql.cj.jdbc.Driver"
+2025-10-24 14:18:17.204 DEBUG com.zaxxer.hikari.HikariConfig - exceptionOverride...............none
+2025-10-24 14:18:17.204 DEBUG com.zaxxer.hikari.HikariConfig - exceptionOverrideClassName......none
+2025-10-24 14:18:17.204 DEBUG com.zaxxer.hikari.HikariConfig - healthCheckProperties...........{}
+2025-10-24 14:18:17.205 DEBUG com.zaxxer.hikari.HikariConfig - healthCheckRegistry.............none
+2025-10-24 14:18:17.205 DEBUG com.zaxxer.hikari.HikariConfig - idleTimeout.....................600000
+2025-10-24 14:18:17.205 DEBUG com.zaxxer.hikari.HikariConfig - initializationFailTimeout.......1
+2025-10-24 14:18:17.205 DEBUG com.zaxxer.hikari.HikariConfig - isolateInternalQueries..........false
+2025-10-24 14:18:17.206 DEBUG com.zaxxer.hikari.HikariConfig - jdbcUrl.........................jdbc:mysql://127.0.0.1:3306/gdzc?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+2025-10-24 14:18:17.206 DEBUG com.zaxxer.hikari.HikariConfig - keepaliveTime...................120000
+2025-10-24 14:18:17.206 DEBUG com.zaxxer.hikari.HikariConfig - leakDetectionThreshold..........0
+2025-10-24 14:18:17.206 DEBUG com.zaxxer.hikari.HikariConfig - maxLifetime.....................1800000
+2025-10-24 14:18:17.207 DEBUG com.zaxxer.hikari.HikariConfig - maximumPoolSize.................10
+2025-10-24 14:18:17.207 DEBUG com.zaxxer.hikari.HikariConfig - metricRegistry..................none
+2025-10-24 14:18:17.207 DEBUG com.zaxxer.hikari.HikariConfig - metricsTrackerFactory...........none
+2025-10-24 14:18:17.207 DEBUG com.zaxxer.hikari.HikariConfig - minimumIdle.....................10
+2025-10-24 14:18:17.208 DEBUG com.zaxxer.hikari.HikariConfig - password........................<masked>
+2025-10-24 14:18:17.208 DEBUG com.zaxxer.hikari.HikariConfig - poolName........................"HikariPool-1"
+2025-10-24 14:18:17.208 DEBUG com.zaxxer.hikari.HikariConfig - readOnly........................false
+2025-10-24 14:18:17.209 DEBUG com.zaxxer.hikari.HikariConfig - registerMbeans..................false
+2025-10-24 14:18:17.209 DEBUG com.zaxxer.hikari.HikariConfig - scheduledExecutor...............none
+2025-10-24 14:18:17.209 DEBUG com.zaxxer.hikari.HikariConfig - schema..........................none
+2025-10-24 14:18:17.209 DEBUG com.zaxxer.hikari.HikariConfig - threadFactory...................internal
+2025-10-24 14:18:17.210 DEBUG com.zaxxer.hikari.HikariConfig - transactionIsolation............default
+2025-10-24 14:18:17.210 DEBUG com.zaxxer.hikari.HikariConfig - username........................"root"
+2025-10-24 14:18:17.211 DEBUG com.zaxxer.hikari.HikariConfig - validationTimeout...............5000
+2025-10-24 14:18:17.211 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-10-24 14:18:17.224 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (30484ff2-a163-42ed-9ff2-63f5cf623be5)
+2025-10-24 14:18:17.231 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (30484ff2-a163-42ed-9ff2-63f5cf623be5)
+2025-10-24 14:18:17.233 INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@53564a4c
+2025-10-24 14:18:17.235 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-10-24 14:18:17.283 WARN  org.hibernate.orm.deprecation - HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-24 14:18:17.285 WARN  org.hibernate.orm.deprecation - HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-10-24 14:18:17.315 INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-10-24 14:18:17.336 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Pool stats (total=1/10, idle=1/10, active=0, waiting=0)
+2025-10-24 14:18:17.337 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (5178106d-173a-4693-bd15-93df5cf1e14b)
+2025-10-24 14:18:17.340 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (5178106d-173a-4693-bd15-93df5cf1e14b)
+2025-10-24 14:18:17.341 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@42cff65c
+2025-10-24 14:18:17.374 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=2/10, idle=2/10, active=0, waiting=0)
+2025-10-24 14:18:17.374 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (d2c515bd-b893-4ed4-af54-695a93801e65)
+2025-10-24 14:18:17.378 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (d2c515bd-b893-4ed4-af54-695a93801e65)
+2025-10-24 14:18:17.378 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@3f2fc67
+2025-10-24 14:18:17.410 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=3/10, idle=3/10, active=0, waiting=0)
+2025-10-24 14:18:17.410 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (8bc04216-b30b-4f61-8b20-c542ccbb78e2)
+2025-10-24 14:18:17.413 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (8bc04216-b30b-4f61-8b20-c542ccbb78e2)
+2025-10-24 14:18:17.413 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@32bb7a78
+2025-10-24 14:18:17.444 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=4/10, idle=4/10, active=0, waiting=0)
+2025-10-24 14:18:17.444 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (9488bf30-0c9b-4d24-be89-8f4f2e9311e4)
+2025-10-24 14:18:17.447 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (9488bf30-0c9b-4d24-be89-8f4f2e9311e4)
+2025-10-24 14:18:17.448 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@63dd0328
+2025-10-24 14:18:17.479 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=5/10, idle=5/10, active=0, waiting=0)
+2025-10-24 14:18:17.480 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (ccb73738-406b-42bd-bc4d-d76301ebdf57)
+2025-10-24 14:18:17.483 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (ccb73738-406b-42bd-bc4d-d76301ebdf57)
+2025-10-24 14:18:17.483 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@5d764eba
+2025-10-24 14:18:17.514 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=6/10, idle=6/10, active=0, waiting=0)
+2025-10-24 14:18:17.514 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (50660918-f9f9-4994-a97f-3a16e5151ece)
+2025-10-24 14:18:17.518 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (50660918-f9f9-4994-a97f-3a16e5151ece)
+2025-10-24 14:18:17.518 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@67939c4c
+2025-10-24 14:18:17.549 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=7/10, idle=7/10, active=0, waiting=0)
+2025-10-24 14:18:17.549 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (ce997831-e728-4025-a940-d73a569b5dde)
+2025-10-24 14:18:17.553 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (ce997831-e728-4025-a940-d73a569b5dde)
+2025-10-24 14:18:17.553 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@d71aa1
+2025-10-24 14:18:17.584 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=8/10, idle=8/10, active=0, waiting=0)
+2025-10-24 14:18:17.584 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (b32c7ac1-381b-4915-98a7-f900526b4229)
+2025-10-24 14:18:17.587 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (b32c7ac1-381b-4915-98a7-f900526b4229)
+2025-10-24 14:18:17.587 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@77381947
+2025-10-24 14:18:17.620 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=9/10, idle=9/10, active=0, waiting=0)
+2025-10-24 14:18:17.620 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (23143b63-24fe-450b-8cd9-367fa008eb99)
+2025-10-24 14:18:17.624 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (23143b63-24fe-450b-8cd9-367fa008eb99)
+2025-10-24 14:18:17.624 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@7cd9edf7
+2025-10-24 14:18:17.654 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After adding stats (total=10/10, idle=10/10, active=0, waiting=0)
+2025-10-24 14:18:18.747 INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-10-24 14:18:18.750 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-10-24 14:18:19.232 INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-10-24 14:18:20.435 INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name dbUserDetailsService
+2025-10-24 14:18:20.556 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.AdminUserController:
+	{PUT [/api/admin/users/{id}]}: update(Long,UpdateUserRequest)
+	{GET [/api/admin/users]}: list()
+	{POST [/api/admin/users]}: create(CreateUserRequest)
+	{DELETE [/api/admin/users/{id}]}: delete(Long)
+	{GET [/api/admin/users/page]}: page(int,int)
+2025-10-24 14:18:20.567 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.BorrowController:
+	{POST [/api/borrows]}: create(BorrowRecord)
+	{GET [/api/borrows]}: page(Long,Long,Boolean,LocalDateTime,LocalDateTime,Pageable)
+	{GET [/api/borrows/stats]}: stats(LocalDate,LocalDateTime,LocalDateTime)
+2025-10-24 14:18:20.568 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.ConsumableController:
+	{POST [/api/consumables/replacement]}: replacement(Long,Long,Integer,String)
+	{GET [/api/consumables/page]}: page(String,Boolean,int,int,String)
+2025-10-24 14:18:20.572 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.EquipmentCategoryController:
+	{GET [/api/equipment-categories/{id}]}: get(Long)
+	{PUT [/api/equipment-categories/{id}]}: update(Long,EquipmentCategory)
+	{GET [/api/equipment-categories]}: list()
+	{POST [/api/equipment-categories]}: create(EquipmentCategory)
+	{DELETE [/api/equipment-categories/{id}]}: delete(Long)
+	{GET [/api/equipment-categories/roots]}: roots()
+	{GET [/api/equipment-categories/tree]}: tree()
+	{GET [/api/equipment-categories/type/{type}]}: byType(EquipmentType)
+	{GET [/api/equipment-categories/parent/{parentId}]}: byParent(Long)
+2025-10-24 14:18:20.577 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.EquipmentController:
+	{PUT [/api/equipment/{id}]}: update(Long,EquipmentDTO)
+	{GET [/api/equipment]}: list()
+	{POST [/api/equipment]}: create(EquipmentDTO)
+	{DELETE [/api/equipment/{id}]}: delete(Long)
+	{GET [/api/equipment/query]}: query(EquipmentStatus,Long,Long,Long,Long,String,Pageable)
+	{GET [/api/equipment/export]}: export(EquipmentStatus,Long,Long,Long,Long,String)
+	{GET [/api/equipment/keeper/{keeperId}]}: findByKeeper(Long)
+	{GET [/api/equipment/location/{locationId}]}: findByLocation(Long)
+	{GET [/api/equipment/status/{status}]}: findByStatus(EquipmentStatus)
+	{GET [/api/equipment/{id}]}: getById(Long)
+	{GET [/api/equipment/page]}: page(Pageable)
+2025-10-24 14:18:20.581 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.EquipmentDocumentController:
+	{POST [/api/equipment-docs/upload]}: upload(Long,String,DocType,MultipartFile,String)
+	{GET [/api/equipment-docs/page]}: page(Long,int,int,String)
+2025-10-24 14:18:20.585 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.EquipmentTransferController:
+	{GET [/api/equipment-transfers/page]}: getTransferPage(Pageable,String,String)
+	{GET [/api/equipment-transfers/equipment/{equipmentId}]}: getTransfersByEquipmentId(Long)
+	{POST [/api/equipment-transfers]}: createTransfer(EquipmentTransferDTO)
+	{PUT [/api/equipment-transfers/{id}/complete]}: completeTransfer(Long)
+	{PUT [/api/equipment-transfers/{id}/cancel]}: cancelTransfer(Long)
+	{GET [/api/equipment-transfers/overdue]}: getOverdueLoans()
+	{GET [/api/equipment-transfers]}: getAllTransfers()
+	{GET [/api/equipment-transfers/statuses]}: getTransferStatuses()
+	{GET [/api/equipment-transfers/statistics]}: getTransferStatistics()
+	{GET [/api/equipment-transfers/my-transfers]}: getMyTransfers(Pageable)
+	{GET [/api/equipment-transfers/types]}: getTransferTypes()
+2025-10-24 14:18:20.591 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.EquipmentWorkflowController:
+	{POST [/api/equipment/{id}/workflow/borrow]}: borrow(Long,BorrowRequestDTO)
+	{POST [/api/equipment/{id}/workflow/move]}: move(Long,MoveRequestDTO)
+	{POST [/api/equipment/{id}/workflow/return]}: returnBack(Long)
+	{POST [/api/equipment/{id}/workflow/scrap]}: scrap(Long,ScrapRequestDTO)
+	{GET [/api/equipment/{id}/workflow/history/placements]}: getPlacementHistory(Long)
+	{POST [/api/equipment/{id}/workflow/maintenance/start]}: maintenanceStart(Long,MaintenanceStartDTO)
+	{GET [/api/equipment/{id}/workflow/history/maintenances]}: getMaintenanceHistory(Long)
+	{POST [/api/equipment/{id}/workflow/maintenance/complete]}: maintenanceComplete(Long,MaintenanceCompleteDTO)
+	{GET [/api/equipment/{id}/workflow/history/borrows]}: getBorrowHistory(Long)
+2025-10-24 14:18:20.594 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.InventoryRecordController:
+	{GET [/api/inventory-records]}: list(Long,Integer)
+	{POST [/api/inventory-records/{equipmentId}]}: create(Long,InventoryRecordDTO)
+2025-10-24 14:18:20.595 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.KnowledgeBaseController:
+	{POST [/api/knowledge-cases]}: create(FaultCase)
+	{GET [/api/knowledge-cases/page]}: page(Long,String,int,int,String)
+2025-10-24 14:18:20.599 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.LocationController:
+	{PUT [/api/locations/{id}]}: update(Long,LocationDTO)
+	{GET [/api/locations]}: list()
+	{POST [/api/locations]}: create(LocationDTO)
+	{DELETE [/api/locations/{id}]}: delete(Long)
+	{GET [/api/locations/tree]}: tree()
+	{GET [/api/locations/{parentId}/children]}: children(Long)
+	{GET [/api/locations/{id}]}: getById(Long)
+2025-10-24 14:18:20.602 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.MaintenanceController:
+	{POST [/api/maintenances]}: create(MaintenanceRecord)
+	{POST [/api/maintenances/create-with-parts]}: createWithParts(MaintenanceCreateWithPartsDTO)
+	{GET [/api/maintenances]}: page(Long,Boolean,LocalDateTime,LocalDateTime,Pageable)
+	{GET [/api/maintenances/stats]}: stats(LocalDateTime,LocalDateTime)
+2025-10-24 14:18:20.604 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.OperationLogController:
+	{GET [/api/operation-logs]}: list(Long,String,Long,String,LocalDateTime,LocalDateTime)
+	{GET [/api/operation-logs/latest]}: latest(String,Long,String)
+	{GET [/api/operation-logs/export]}: exportCsv(String,String,Long,String,LocalDateTime,LocalDateTime,String)
+	{GET [/api/operation-logs/page]}: page(String,String,Long,String,LocalDateTime,LocalDateTime,String,int,int,String)
+2025-10-24 14:18:20.612 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.SparePartController:
+	{GET [/api/spare-parts/by-model]}: byModel(String)
+	{POST [/api/spare-parts/{id}/adjust-stock]}: adjustStock(Long,Long,int,TransactionType,String,Long)
+	{GET [/api/spare-parts/page]}: page(String,Boolean,int,int,String)
+2025-10-24 14:18:20.616 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.c.SupplierController:
+	{GET [/api/suppliers/{id}]}: get(Long)
+	{PUT [/api/suppliers/{id}]}: update(Long,Supplier)
+	{GET [/api/suppliers]}: list(Pageable)
+	{POST [/api/suppliers]}: create(Supplier)
+	{DELETE [/api/suppliers/{id}]}: delete(Long)
+	{GET [/api/suppliers/search]}: search(String,Pageable)
+	{POST [/api/suppliers/{id}/activate]}: activate(Long)
+	{GET [/api/suppliers/page]}: page(Pageable)
+2025-10-24 14:18:20.621 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.w.AdminController:
+	{GET [/admin]}: index(Model)
+	{GET [/admin/locations]}: locations(Model)
+	{GET [/admin/equipment-docs]}: equipmentDocs(Model)
+	{GET [/admin/maintenances]}: maintenances(Model)
+	{GET [/admin/consumables]}: consumables(Model)
+	{GET [/admin/operation-logs]}: operationLogs(Model)
+	{GET [/admin/categories]}: categories(Model)
+	{GET [/admin/equipment]}: equipment(Model)
+	{GET [/admin/knowledge]}: knowledge(Model)
+	{GET [/admin/users]}: users(Model)
+	{GET [/admin/suppliers]}: suppliers(Model)
+	{GET [/admin/spare-parts]}: spareParts(Model)
+	{GET [/admin/inventory]}: inventory(Model)
+	{GET [/admin/transfers]}: transfers(Model)
+2025-10-24 14:18:20.624 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.w.HomeController:
+	{GET [/]}: home()
+2025-10-24 14:18:20.625 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	c.e.g.w.LoginController:
+	{GET [/login]}: loginPage()
+2025-10-24 14:18:20.628 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	{ [/error]}: error(HttpServletRequest)
+	{ [/error], produces [text/html]}: errorHtml(HttpServletRequest,HttpServletResponse)
+2025-10-24 14:18:20.651 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	o.s.w.a.OpenApiWebMvcResource:
+	{GET [/v3/api-docs], produces [application/json]}: openapiJson(HttpServletRequest,String,Locale)
+	{GET [/v3/api-docs.yaml], produces [application/vnd.oai.openapi]}: openapiYaml(HttpServletRequest,String,Locale)
+2025-10-24 14:18:20.655 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	{GET [/swagger-ui.html]}: redirectToUi(HttpServletRequest)
+2025-10-24 14:18:20.657 TRACE o.s.w.s.m.m.a.RequestMappingHandlerMapping - 
+	o.s.w.u.SwaggerConfigResource:
+	{GET [/v3/api-docs/swagger-config], produces [application/json]}: openapiJson(HttpServletRequest)
+2025-10-24 14:18:20.661 DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - 104 mappings in 'requestMappingHandlerMapping'
+2025-10-24 14:18:20.762 DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Patterns [/webjars/**, /**, /uploads/**, /swagger-ui*/*swagger-initializer.js, /swagger-ui*/**] in 'resourceHandlerMapping'
+2025-10-24 14:18:20.886 INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 2 endpoints beneath base path '/actuator'
+2025-10-24 14:18:21.033 DEBUG o.s.w.s.m.m.a.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-10-24 14:18:21.115 DEBUG o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 2 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-10-24 14:18:21.426 INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-0.0.0.0-13697"]
+2025-10-24 14:18:21.432 WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-10-24 14:18:21.438 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-10-24 14:18:21.440 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-10-24 14:18:21.441 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Before shutdown stats (total=10/10, idle=10/10, active=0, waiting=0)
+2025-10-24 14:18:21.442 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@53564a4c: (connection evicted)
+2025-10-24 14:18:21.443 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@42cff65c: (connection evicted)
+2025-10-24 14:18:21.443 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@3f2fc67: (connection evicted)
+2025-10-24 14:18:21.444 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@32bb7a78: (connection evicted)
+2025-10-24 14:18:21.444 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@63dd0328: (connection evicted)
+2025-10-24 14:18:21.444 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@5d764eba: (connection evicted)
+2025-10-24 14:18:21.444 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@67939c4c: (connection evicted)
+2025-10-24 14:18:21.445 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@d71aa1: (connection evicted)
+2025-10-24 14:18:21.445 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@77381947: (connection evicted)
+2025-10-24 14:18:21.446 DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@7cd9edf7: (connection evicted)
+2025-10-24 14:18:21.446 DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - After  shutdown stats (total=0/10, idle=0/10, active=0, waiting=0)
+2025-10-24 14:18:21.446 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-10-24 14:18:21.473 INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-10-24 14:18:21.487 ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 13697 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 13697 or configure this application to listen on another port.
+
