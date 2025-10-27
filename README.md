@@ -117,5 +117,7 @@
 - DevOps：Docker 容器化、CI/CD 流水线、自动化测试与质量门禁
 
 ## 版权与协议
-- 该项目用于企业内部/学习参考，版权归属FJBU——xxzx 
+- 该项目用于企业内部/学习参考，版权与著作权归属 @FTBU_xxzx（All rights reserved）
+
+> 说明：本项目的源代码版权与著作权归属 @FTBU_xxzx。未经授权不得以任何形式复制、分发或用于商业用途。如需授权或合作，请联系 @FTBU_xxzx。
 @author Vincent Luo
