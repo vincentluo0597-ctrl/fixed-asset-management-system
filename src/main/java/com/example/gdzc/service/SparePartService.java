@@ -21,6 +21,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SparePartService {
+    /**
+     * 备件领域服务：分页筛选、按设备型号映射、分库位库存与总库存维护、预警日志与统计。
+     */
     private final SparePartRepository sparePartRepository;
     private final SparePartInventoryRepository inventoryRepository;
     private final SparePartTransactionRepository transactionRepository;
@@ -50,6 +53,7 @@ public class SparePartService {
 
     @Transactional
     public SparePart adjustStock(Long partId, Long locationId, int quantity, SparePartTransaction.TransactionType type, String note, Long refMaintenanceId) {
+        // 分库位变更 + 总库存同步；出库负数保护；触发低库存预警日志
         SparePart part = sparePartRepository.findById(partId).orElseThrow();
         // 更新分库位库存
         SparePartInventory inv = inventoryRepository.findByPartIdAndLocationId(partId, locationId)
@@ -81,5 +85,34 @@ public class SparePartService {
                     "备件库存低于安全库存：" + part.getCode() + "(" + part.getName() + ") 当前=" + part.getTotalStock() + ", 安全=" + part.getSafetyStock());
         }
         return part;
+    }
+
+    public java.util.List<SparePart> listAll() {
+        return sparePartRepository.findAll();
+    }
+
+    public SparePartStats stats() {
+        java.util.List<SparePart> all = sparePartRepository.findAll();
+        int total = all.size();
+        int low = 0, warn = 0;
+        java.util.List<SparePartStats.Item> topLow = new java.util.ArrayList<>();
+        java.util.List<SparePart> sorted = new java.util.ArrayList<>(all);
+        sorted.sort((a,b) -> Integer.compare((a.getTotalStock()==null?0:a.getTotalStock()) - (a.getSafetyStock()==null?0:a.getSafetyStock()),
+                                             (b.getTotalStock()==null?0:b.getTotalStock()) - (b.getSafetyStock()==null?0:b.getSafetyStock())));
+        for (SparePart c : all) {
+            int totalStock = c.getTotalStock()==null?0:c.getTotalStock();
+            int safety = c.getSafetyStock()==null?0:c.getSafetyStock();
+            if (safety>0 && totalStock < safety) low++; else if (safety>0 && totalStock < Math.round(safety*1.2)) warn++;
+        }
+        for (int i=0; i<Math.min(10, sorted.size()); i++) {
+            SparePart c = sorted.get(i);
+            topLow.add(new SparePartStats.Item(c.getId(), c.getCode(), c.getName(), c.getTotalStock(), c.getSafetyStock()));
+        }
+        int safe = total - low - warn;
+        return new SparePartStats(total, low, warn, safe, topLow);
+    }
+
+    public record SparePartStats(int total, int low, int warn, int safe, java.util.List<Item> topLow) {
+        public record Item(Long id, String code, String name, Integer totalStock, Integer safetyStock) {}
     }
 }

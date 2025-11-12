@@ -28,6 +28,11 @@
 .toolbar { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
 .spacer { flex: 1 1 auto; }
 .muted { color: #6b7280; font-size: 12px; }
+/* 顶部导航 */
+.admin-nav { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:#ffffff; border-bottom:1px solid var(--gray-200); position:sticky; top:0; z-index:5; }
+.nav-brand { font-weight:600; color: var(--gray-900); }
+.nav-links a { color: var(--primary-700); margin-right: 12px; text-decoration:none; }
+.nav-links a:hover { text-decoration:underline; }
 
 /* 表单 */
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -35,6 +40,11 @@
 .form-item input, select { width: 100%; padding: 6px 8px; border: 1px solid var(--gray-300); border-radius: 6px; outline: none; }
 .form-item input:focus { border-color: var(--primary-600); box-shadow: 0 0 0 3px var(--primary-50); }
 .actions { display:flex; gap: 8px; align-items:center; margin-top: 8px; }
+/* 过滤工具栏 */
+.filter-bar { display:flex; flex-wrap:wrap; gap: 12px; padding: 10px; background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 8px; margin: 10px 0; }
+.filter-group { display:flex; flex-direction:column; gap:6px; }
+.form-select { padding: 6px 8px; border: 1px solid var(--gray-300); border-radius: 6px; }
+.search-input { display:flex; gap:6px; }
 
 /* 表格 */
 table { width: 100%; border-collapse: collapse; }
@@ -42,6 +52,13 @@ thead th { background: var(--gray-100); color: var(--gray-900); font-weight: 600
 th, td { border: 1px solid var(--gray-200); padding: 8px; }
 .page-controls { margin-top: 8px; }
 .page-info { color: var(--gray-700); }
+.data-table { width: 100%; }
+.table-responsive { width:100%; overflow:auto; }
+.pagination-bar { display:flex; align-items:center; justify-content:space-between; padding:8px; }
+.pagination-controls { display:flex; gap:12px; align-items:center; }
+.page-header { display:flex; align-items:center; justify-content:space-between; }
+.card-header { display:flex; align-items:center; justify-content:space-between; }
+.card-actions { display:flex; align-items:center; gap:8px; }
 
 /* 徽章 */
 .badge { display: inline-flex; align-items:center; gap: 6px; border-radius: 999px; padding: 2px 8px; font-size: 12px; border: 1px solid transparent; }
@@ -74,6 +91,19 @@ th, td { border: 1px solid var(--gray-200); padding: 8px; }
 /* 状态消息 */
 .success { color: #16a34a; }
 .error { color: #dc2626; }
+.alert { padding: 8px 10px; border-radius: 6px; margin-top: 6px; }
+.hidden { display:none; }
+
+/* 动态库存仪表条 */
+.meter { position: relative; height: 10px; background: var(--gray-200); border-radius: 8px; overflow: hidden; }
+.meter-bar { height: 100%; transition: width .3s ease; }
+.meter-green { background: var(--success-600); }
+.meter-orange { background: var(--warning-600); }
+.meter-red { background: var(--danger-600); }
+.risk-badge { display:inline-block; padding:2px 8px; border-radius: 12px; font-size:12px; border:1px solid transparent; margin-left:6px; }
+.risk-badge.safe { background: var(--success-100); color:#166534; }
+.risk-badge.warn { background: var(--warning-100); color:#92400e; }
+.risk-badge.low { background: var(--danger-100); color:#7f1d1d; }
 
 /* 输入与选择器的尺寸优化 */
 select { padding: 6px 8px; border: 1px solid var(--gray-300); border-radius: 6px; }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>耗材管理 - 资产管理后台</title>
+    <link rel="stylesheet" href="/css/admin.css">
     <style>
         body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
         header { background: #1677ff; color: #fff; padding: 14px 20px; }
@@ -31,15 +32,23 @@
             currentPage = page;
             const keyword = document.getElementById('keyword').value.trim();
             const lowStockOnly = document.getElementById('lowStockOnly').checked;
+            const sortByEl = document.getElementById('sortBy');
+            const sortBy = sortByEl ? sortByEl.value : 'code';
             const params = new URLSearchParams({ page, size: pageSize });
             if (keyword) params.append('keyword', keyword);
             if (lowStockOnly) params.append('lowStockOnly', 'true');
             const res = await fetch(`/api/consumables/page?${params.toString()}`);
             const pageData = await res.json();
+            let list = pageData.content || [];
+            if (sortBy === 'risk') {
+                list.sort((a,b)=> riskScore(a) - riskScore(b));
+            }
             const tbody = document.querySelector('#consumables-tbody');
             tbody.innerHTML = '';
-            pageData.content.forEach(c => {
+            list.forEach(c => {
                 const tr = document.createElement('tr');
+                const rk = riskLevel(c);
+                const meter = buildMeterHtml(c);
                 tr.innerHTML = `
                     <td>${c.id ?? ''}</td>
                     <td>${c.code ?? ''}</td>
@@ -48,7 +57,10 @@
                     <td>${c.lifeType ?? ''}</td>
                     <td>${c.lifeValue ?? ''}</td>
                     <td>${c.safetyStock ?? 0}</td>
-                    <td class='${(c.totalStock ?? 0) < (c.safetyStock ?? 0) ? 'danger' : ''}'>${c.totalStock ?? 0}</td>
+                    <td>
+                      <div>${c.totalStock ?? 0}<span class="risk-badge ${rk.cls}">${rk.text}</span></div>
+                      ${meter}
+                    </td>
                     <td>${c.defaultLocationId ?? ''}</td>
                     <td><button onclick='openReplacementForm(${c.id})'>登记更换</button></td>
                 `;
@@ -89,7 +101,40 @@
             }
         }
 
+        function riskScore(c) {
+            const t = (c.totalStock ?? 0); const s = (c.safetyStock ?? 0);
+            if (s <= 0) return 1;
+            return t / s;
+        }
+
+        function riskLevel(c) {
+            const t = (c.totalStock ?? 0); const s = (c.safetyStock ?? 0);
+            if (s <= 0) return { text: '未设安全值', cls: 'safe' };
+            if (t < s) return { text: '缺货', cls: 'low' };
+            if (t < Math.round(s*1.2)) return { text: '预警', cls: 'warn' };
+            return { text: '安全', cls: 'safe' };
+        }
+
+        function buildMeterHtml(c) {
+            const t = (c.totalStock ?? 0); const s = (c.safetyStock ?? 0);
+            if (s <= 0) return `<div class='meter'><div class='meter-bar meter-green' style='width: 100%'></div></div>`;
+            const pct = Math.max(0, Math.min(100, Math.round((t / s) * 100)));
+            const cls = t < s ? 'meter-red' : (t < Math.round(s*1.2) ? 'meter-orange' : 'meter-green');
+            return `<div class='meter'><div class='meter-bar ${cls}' style='width:${pct}%'></div></div>`;
+        }
+
+        async function loadStats(){
+            try {
+                const res = await fetch('/api/consumables/stats');
+                const s = await res.json();
+                const tEl = document.getElementById('c-total'); if (tEl) tEl.textContent = s.total;
+                const lEl = document.getElementById('c-low'); if (lEl) lEl.textContent = s.low;
+                const wEl = document.getElementById('c-warn'); if (wEl) wEl.textContent = s.warn;
+            } catch(e) {}
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
+            loadStats();
             loadConsumables(0);
         });
     </script>
@@ -113,8 +158,24 @@
         <div class="toolbar">
             <input id="keyword" type="text" placeholder="按名称/编码搜索">
             <label><input type="checkbox" id="lowStockOnly"> 仅显示低库存</label>
+            <label>排序
+                <select id="sortBy" onchange="loadConsumables(0)">
+                    <option value="code">编码</option>
+                    <option value="risk">风险优先</option>
+                </select>
+            </label>
             <button onclick="loadConsumables(0)">搜索</button>
             <span style="flex:1"></span>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div class="muted">耗材总数</div>
+                <div id="c-total" style="font-weight:600;">-</div>
+            </div>
+            <div class="card">
+                <div class="muted">缺货/预警</div>
+                <div><span class="risk-badge low">缺货</span> <span id="c-low">-</span>  <span class="risk-badge warn" style="margin-left:8px;">预警</span> <span id="c-warn">-</span></div>
+            </div>
         </div>
         <table>
             <thead>

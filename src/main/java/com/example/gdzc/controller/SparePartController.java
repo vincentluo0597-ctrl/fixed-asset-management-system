@@ -18,6 +18,9 @@ import java.util.List;
 @RequestMapping("/api/spare-parts")
 @RequiredArgsConstructor
 public class SparePartController {
+    /**
+     * 备件管理控制器：分页查询、按设备型号关联查询、库存调整与统计。
+     */
     private final SparePartService sparePartService;
 
     @GetMapping("/page")
@@ -43,6 +46,11 @@ public class SparePartController {
                                                  @RequestParam(required = false) String note,
                                                  @RequestParam(required = false) Long refMaintenanceId) {
         return ResponseEntity.ok(sparePartService.adjustStock(id, locationId, quantity, type, note, refMaintenanceId));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<SparePartService.SparePartStats> stats() {
+        return ResponseEntity.ok(sparePartService.stats());
     }
 
     private Pageable buildPageable(int page, int size, String sort) {

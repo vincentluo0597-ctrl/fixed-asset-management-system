@@ -10,4 +10,5 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     Optional<Location> findByName(String name);
     List<Location> findByParentId(Long parentId);
     boolean existsByParentId(Long parentId);
+    List<Location> findByNameContainingIgnoreCase(String name);
 }

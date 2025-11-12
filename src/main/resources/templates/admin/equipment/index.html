@@ -37,6 +37,10 @@
                 <button class="btn btn-secondary" onclick="exportCsv()">
                     <span class="icon">📊</span> 导出 CSV
                 </button>
+                <label class="btn btn-secondary" style="margin-left:8px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                    <span class="icon">📥</span> 导入 CSV
+                    <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCsv()" />
+                </label>
             </div>
         </div>
         
@@ -859,6 +863,26 @@ function exportCsv() {
   } catch (err) {
     console.error(err);
     showMsg('导出失败：' + err.message, false);
+  }
+}
+</script>
+
+<script>
+async function importCsv(){
+  const f = document.getElementById('importFile').files[0];
+  if (!f) return;
+  const fd = new FormData();
+  fd.append('file', f);
+  try {
+    const resp = await fetch('/api/equipment/import', { method:'POST', body: fd });
+    if (!resp.ok) throw new Error(await resp.text());
+    const result = await resp.json();
+    showMsg(`导入完成：成功 ${result.success} / 总计 ${result.total} / 失败 ${result.failed}`);
+    await loadEquipment();
+  } catch(err){
+    showMsg('导入失败：' + err.message, false);
+  } finally {
+    document.getElementById('importFile').value = '';
   }
 }
 </script>

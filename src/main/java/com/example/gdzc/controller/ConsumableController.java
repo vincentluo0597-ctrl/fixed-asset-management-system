@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/consumables")
 @RequiredArgsConstructor
 public class ConsumableController {
+    /**
+     * 耗材管理控制器：提供分页查询、低库存筛选与更换登记，以及统计数据接口。
+     */
     private final ConsumableService consumableService;
 
     @GetMapping("/page")
@@ -33,6 +36,11 @@ public class ConsumableController {
                                                                    @RequestParam(required = false) Integer usageValue,
                                                                    @RequestParam(required = false) String note) {
         return ResponseEntity.ok(consumableService.recordReplacement(consumableId, equipmentId, usageValue, note));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<ConsumableService.ConsumableStats> stats() {
+        return ResponseEntity.ok(consumableService.stats());
     }
 
     private Pageable buildPageable(int page, int size, String sort) {

@@ -20,6 +20,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class EquipmentService {
+    /**
+     * 设备领域服务：负责设备的持久化、派生字段计算（如保修到期、当前价值）、以及操作日志记录。
+     */
     private final EquipmentRepository equipmentRepository;
     private final OperationLogService operationLogService;
 
@@ -48,6 +51,7 @@ public class EquipmentService {
 
     @Transactional
     public Equipment create(EquipmentDTO dto) {
+        // 输入校验与派生字段计算：保修到期、初始价值
         String name = dto.getName() != null ? dto.getName().trim() : null;
         if (!StringUtils.hasText(name)) {
             throw new IllegalArgumentException("设备名称不能为空");
@@ -95,6 +99,7 @@ public class EquipmentService {
                 .remarks(dto.getRemarks())
                 .build();
         Equipment saved = equipmentRepository.save(equipment);
+        // 写入操作日志，记录当前登录用户与动作
         operationLogService.logWithCurrentUser("Equipment", saved.getId(), "CREATE", "创建设备: " + saved.getName());
         return saved;
     }
@@ -141,6 +146,7 @@ public class EquipmentService {
         }
         
         Equipment saved = equipmentRepository.save(equipment);
+        // 写入操作日志
         operationLogService.logWithCurrentUser("Equipment", saved.getId(), "UPDATE", "更新设备: " + saved.getName());
         return saved;
     }
@@ -150,6 +156,7 @@ public class EquipmentService {
         Equipment equipment = equipmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("设备不存在"));
         equipmentRepository.delete(equipment);
+        // 写入操作日志
         operationLogService.logWithCurrentUser("Equipment", id, "DELETE", "删除设备: " + equipment.getName());
     }
     

@@ -5,14 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>资产管理后台</title>
     <style>
-        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
-        header { background: #1677ff; color: #fff; padding: 14px 20px; }
-        header h1 { margin:0; font-size: 18px; }
-        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
-        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
-        main { padding: 20px; }
-        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; margin-bottom: 14px; }
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Helvetica, sans-serif; background: #f7f8fa; margin: 0; color:#1f2328; }
+        header { background: linear-gradient(90deg,#1677ff,#3a8bff); color: #fff; padding: 16px 20px; display:flex; align-items:center; justify-content:space-between; }
+        header h1 { margin:0; font-size: 18px; letter-spacing: .5px; }
+        nav { background: #ffffff; border-bottom: 1px solid #e6e8eb; padding: 10px 20px; position:sticky; top:0; z-index:5; }
+        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; padding:6px 8px; border-radius:6px; }
+        nav a:hover { background:#f0f6ff; }
+        main { padding: 20px; max-width: 1200px; margin:0 auto; }
+        .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+        .card { background:#fff; border:1px solid #e6e8eb; box-shadow: 0 1px 2px rgba(0,0,0,0.04); border-radius: 10px; padding: 14px; }
+        .card h2 { margin: 0 0 8px; font-size:16px; }
         .danger { color: #ff4d4f; }
+        .search-bar { display:flex; gap:8px; margin-top:8px; }
+        .search-bar input { flex:1; padding:10px 12px; border:1px solid #d0d7de; border-radius:8px; }
+        .btn { padding:8px 12px; border:1px solid #1677ff; color:#1677ff; background:#fff; border-radius:8px; cursor:pointer; }
+        .btn.primary { background:#1677ff; color:#fff; }
+        .list { list-style:none; padding:0; margin:8px 0 0; }
+        .list li { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eef0f3; }
+        .pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:12px; background:#f2f8ff; color:#3a8bff; border:1px solid #cfe2ff; }
+        .muted { color:#656d76; font-size:12px; }
     </style>
 </head>
 <body>
@@ -38,25 +49,155 @@
     <a href="/admin/operation-logs">操作日志</a>
 </nav>
 <main>
-    <div class="card">
-        <h2>系统状态</h2>
-        <p>端口：13697</p>
-        <p>数据库：MySQL（请在 Swagger UI 中使用接口进行管理操作）</p>
+    <div class="grid">
+        <div class="card">
+            <h2>系统状态</h2>
+            <p>端口：<span class="pill">13697</span></p>
+            <p>数据库：<span class="pill">MySQL</span> <span class="muted">（查看 <a href="/swagger-ui/index.html" target="_blank">接口文档</a>）</span></p>
+            <div class="search-bar">
+                <input id="globalKeyword" type="text" placeholder="全局搜索：设备/供应商/位置...">
+                <button class="btn primary" onclick="doGlobalSearch()">搜索</button>
+            </div>
+            <div id="searchResult" class="muted" style="margin-top:6px;">输入关键字后显示匹配概览</div>
+            <ul id="searchList" class="list"></ul>
+        </div>
+
+        <div class="card">
+            <h2>耗材库存预警</h2>
+            <p class="muted">低于安全库存的耗材 Top 10</p>
+            <ul id="lowStockList" class="list"></ul>
+            <div class="muted"><a href="/admin/consumables">进入耗材管理</a></div>
+        </div>
+        <div class="card">
+            <h2>资产概览</h2>
+            <div id="overviewLoad" class="muted">加载中...</div>
+            <div style="display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin-top:8px;">
+                <div>
+                    <div class="muted">设备总数</div>
+                    <div id="eqTotal" style="font-weight:600;">-</div>
+                    <ul id="eqByStatus" class="list" style="margin-top:6px;"></ul>
+                </div>
+                <div>
+                    <div class="muted">保修到期（30天内）Top10</div>
+                    <ul id="warrantyTop" class="list" style="margin-top:6px;"></ul>
+                </div>
+            </div>
+            <div style="margin-top:8px;">
+                <div class="muted">近7天操作日志</div>
+                <ul id="opsTrend" class="list" style="margin-top:6px;"></ul>
+            </div>
+        </div>
     </div>
-    <div class="card">
+
+    <div class="card" style="margin-top:16px;">
         <h2>下一步</h2>
         <ul>
             <li>完善供应商/设备分类/设备的管理页面（前端表格 + 表单）。</li>
             <li>将用户登录改为数据库存储，并配置权限。</li>
             <li>根据需要收紧 API 访问权限（目前开放，便于联调）。</li>
         </ul>
-        
     </div>
 </main>
 <footer style="text-align:center;font-size:12px;color:#888;margin:16px 0;">
     © 2025 @FTBU_xxzx All rights reserved
     <span style="margin-left:8px;">本系统源代码版权与著作权归属 @FTBU_xxzx</span>
     <span style="margin-left:8px;"><a href="/COPYRIGHT.md" target="_blank" style="color:#888;">版权声明</a></span>
- </footer>
+</footer>
+<script>
+async function doGlobalSearch(){
+  const kw = document.getElementById('globalKeyword').value.trim();
+  if (!kw) { document.getElementById('searchResult').textContent = '请输入关键字'; return; }
+  try {
+    const resp = await fetch('/api/search?q=' + encodeURIComponent(kw));
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+    document.getElementById('searchResult').textContent = `匹配设备 ${data.equipmentCount}，供应商 ${data.supplierCount}，位置 ${data.locationCount}`;
+    const ul = document.getElementById('searchList');
+    ul.innerHTML = '';
+    for (const e of (data.equipmentTop||[])) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>设备：${e.name} <span class="muted">${e.brand||''} ${e.model||''}</span></span><a href="/admin/equipment" class="pill">查看</a>`;
+      ul.appendChild(li);
+    }
+    for (const s of (data.supplierTop||[])) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>供应商：${s.name}</span><a href="/admin/suppliers" class="pill">查看</a>`;
+      ul.appendChild(li);
+    }
+    for (const l of (data.locationTop||[])) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>位置：${l.name}</span><a href="/admin/locations" class="pill">查看</a>`;
+      ul.appendChild(li);
+    }
+  } catch(err){
+    document.getElementById('searchResult').textContent = '搜索失败：' + err.message;
+  }
+}
+
+async function loadLowStock(){
+  try {
+    const resp = await fetch('/api/consumables/page?lowStockOnly=true&page=0&size=10&sort=totalStock,asc');
+    if (!resp.ok) throw new Error(await resp.text());
+    const page = await resp.json();
+    const list = page.content || [];
+    const ul = document.getElementById('lowStockList');
+    ul.innerHTML = '';
+    if (list.length === 0) {
+      const li = document.createElement('li');
+      li.innerHTML = '<span>暂无预警</span>';
+      ul.appendChild(li);
+      return;
+    }
+    for (const c of list) {
+      const li = document.createElement('li');
+      const warn = (c.totalStock||0) < (c.safetyStock||0);
+      li.innerHTML = `<span>${c.code||''} ${c.name||''}</span><span class="pill" style="${warn?'background:#fff1f0;color:#cf1322;border-color:#ffa39e':''}">库存 ${c.totalStock??0} / 安全 ${c.safetyStock??0}</span>`;
+      ul.appendChild(li);
+    }
+  } catch(err){
+    const ul = document.getElementById('lowStockList');
+    ul.innerHTML = '<li><span>加载失败：' + err.message + '</span></li>';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadLowStock();
+  loadOverview();
+});
+
+async function loadOverview(){
+  try {
+    const resp = await fetch('/api/dashboard/metrics');
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+    document.getElementById('overviewLoad').classList.add('hidden');
+    document.getElementById('eqTotal').textContent = String(data.equipmentTotal ?? 0);
+    const ul = document.getElementById('eqByStatus');
+    ul.innerHTML = '';
+    for (const s of (data.byStatus||[])) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${s.status}</span><span class="pill">${s.count}</span>`;
+      ul.appendChild(li);
+    }
+    const wl = document.getElementById('warrantyTop');
+    wl.innerHTML = (data.warrantyExpiringTop||[]).length === 0 ? '<li><span>暂无到期项</span></li>' : '';
+    for (const w of (data.warrantyExpiringTop||[])) {
+      const li = document.createElement('li');
+      const days = (w.daysLeft==null) ? '' : (w.daysLeft>=0 ? `剩余 ${w.daysLeft} 天` : `已过期 ${Math.abs(w.daysLeft)} 天`);
+      li.innerHTML = `<span>${w.name}</span><span class="pill">${w.warrantyExpiryDate||''}</span><span class="muted" style="margin-left:6px;">${days}</span>`;
+      wl.appendChild(li);
+    }
+    const tl = document.getElementById('opsTrend');
+    tl.innerHTML = '';
+    for (const d of (data.operationsLast7Days||[])) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${d.date}</span><span class="pill">${d.count}</span>`;
+      tl.appendChild(li);
+    }
+  } catch(err){
+    document.getElementById('overviewLoad').textContent = '加载失败：' + err.message;
+  }
+}
+</script>
 </body>
 </html>
