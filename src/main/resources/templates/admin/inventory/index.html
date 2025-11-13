@@ -3,66 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <title>盘库（设备一览）</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/css/admin.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1%">
+    <link rel="stylesheet" href="/css/modern-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      .section-title { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--gray-900); margin-bottom: var(--space-4); }
+      .filters-label { font-size: var(--font-size-sm); color: var(--gray-600); }
+    </style>
 </head>
 <body>
-<div class="admin-header">
-  <div class="wrap">
-    <div class="brand">资产管理后台</div>
-    <nav>
-      <a href="/admin">首页</a>
-      <a href="/admin/users">用户管理</a>
-      <a href="/admin/equipment">设备管理</a>
-      <a href="/admin/transfers">设备调用</a>
-      <a href="/admin/inventory">盘库</a>
-      <a href="/admin/locations">位置管理</a>
-      <a href="/admin/categories">分类管理</a>
-      <a href="/admin/suppliers">供应商管理</a>
-    </nav>
+<nav class="modern-nav">
+  <div class="modern-flex-between">
+    <a href="/admin" class="modern-nav-brand">
+      <i class="fas fa-clipboard-check"></i>
+      资产管理后台
+    </a>
+    <ul class="modern-nav-menu">
+      <li><a href="/admin" class="modern-nav-link">首页</a></li>
+      <li><a href="/admin/users" class="modern-nav-link">用户管理</a></li>
+      <li><a href="/admin/equipment" class="modern-nav-link">设备管理</a></li>
+      <li><a href="/admin/transfers" class="modern-nav-link">设备调用</a></li>
+      <li><a href="/admin/inventory" class="modern-nav-link active">盘库</a></li>
+      <li><a href="/admin/locations" class="modern-nav-link">位置管理</a></li>
+      <li><a href="/admin/categories" class="modern-nav-link">分类管理</a></li>
+      <li><a href="/admin/suppliers" class="modern-nav-link">供应商管理</a></li>
+    </ul>
   </div>
-</div>
+</nav>
 
-<div class="admin-container">
-  <div class="section-title">盘库（设备一览）</div>
-  <div class="card">
-    <div class="toolbar">
-      <a href="/admin" class="btn btn-secondary">返回管理首页</a>
-      <button class="btn btn-primary" onclick="reloadAll()">刷新数据</button>
-      <span id="msg" class="hidden"></span>
+<div class="modern-container">
+  <div class="dashboard-header fade-in-up" style="margin-top: var(--space-4);">
+    <h1 class="dashboard-title">
+      <i class="fas fa-clipboard-check"></i>
+      盘库（设备一览）
+    </h1>
+    <p class="dashboard-subtitle">快速筛选与导出设备盘库数据</p>
+  </div>
+
+  <div class="modern-card fade-in-up">
+    <div class="modern-flex-between modern-toolbar" style="margin-bottom: var(--space-3);">
+      <div class="modern-flex" style="gap: var(--space-2);">
+        <a href="/admin" class="modern-btn modern-btn-secondary">
+          <i class="fas fa-home"></i>
+          返回首页
+        </a>
+        <button class="modern-btn modern-btn-primary" onclick="reloadAll()">
+          <i class="fas fa-rotate"></i>
+          刷新数据
+        </button>
+        <a href="/swagger-ui/index.html" target="_blank" class="modern-btn modern-btn-outline">
+          <i class="fas fa-book"></i>
+          API文档
+        </a>
+      </div>
+      <span id="msg" class="modern-badge hidden"></span>
+    </div>
+
+    <div class="modern-toolbar fade-in-up">
+      <span class="filters-label">状态：</span>
+      <select id="filterStatus" class="modern-select" onchange="onFilterChanged()"></select>
+      <span class="filters-label">分类：</span>
+      <select id="filterCategoryId" class="modern-select" onchange="onFilterChanged()"></select>
+      <span class="filters-label">位置：</span>
+      <select id="filterLocationId" class="modern-select" onchange="onFilterChanged()"></select>
+      <span class="filters-label">保管人：</span>
+      <select id="filterKeeperId" class="modern-select" onchange="onFilterChanged()"></select>
+      <span class="filters-label">搜索：</span>
+      <input id="searchKeyword" type="text" class="modern-input modern-input-inline" placeholder="名称/型号/品牌/序列号/资产编号" />
+      <button class="modern-btn modern-btn-secondary" onclick="onSearch()">
+        <i class="fas fa-search"></i>
+        搜索
+      </button>
+      <button class="modern-btn modern-btn-secondary" onclick="clearFilter()">
+        <i class="fas fa-eraser"></i>
+        清空
+      </button>
+      <button class="modern-btn modern-btn-outline" onclick="exportCsv()">
+        <i class="fas fa-file-csv"></i>
+        导出CSV
+      </button>
       <span class="spacer"></span>
+      <span class="filters-label">每页</span>
+      <select id="pageSize" class="modern-select" onchange="onPageSizeChanged()">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+      <button class="modern-btn modern-btn-secondary" onclick="prevPage()">上一页</button>
+      <button class="modern-btn modern-btn-secondary" onclick="nextPage()">下一页</button>
+      <span id="pageInfo" class="modern-badge modern-badge-primary">第 1/1 页，共 0 条</span>
     </div>
   </div>
-
-<div class="toolbar">
-  <label>状态：</label>
-  <select id="filterStatus" onchange="onFilterChanged()"></select>
-  <label>分类：</label>
-  <select id="filterCategoryId" onchange="onFilterChanged()"></select>
-  <label>位置：</label>
-  <select id="filterLocationId" onchange="onFilterChanged()"></select>
-  <label>保管人：</label>
-  <select id="filterKeeperId" onchange="onFilterChanged()"></select>
-  <label>搜索：</label>
-  <input id="searchKeyword" type="text" placeholder="名称/型号/品牌/序列号/资产编号" style="width:220px;" />
-  <button class="btn" onclick="onSearch()">搜索</button>
-  <button class="btn" onclick="clearFilter()">清空筛选</button>
-  <button class="btn" onclick="exportCsv()">导出 CSV</button>
-  <span style="margin-left:auto; display:flex; align-items:center; gap:6px;">
-    <label style="font-size:12px;">每页</label>
-    <select id="pageSize" onchange="onPageSizeChanged()">
-      <option value="5">5</option>
-      <option value="10" selected>10</option>
-      <option value="20">20</option>
-      <option value="50">50</option>
-    </select>
-    <button class="btn" onclick="prevPage()">上一页</button>
-    <button class="btn" onclick="nextPage()">下一页</button>
-    <span id="pageInfo" class="page-info">第 1/1 页，共 0 条</span>
-  </span>
 </div>
 
-<table id="inventoryTable">
+<table id="inventoryTable" class="modern-table fade-in-up">
   <thead>
     <tr>
       <th>ID</th>
@@ -94,7 +129,7 @@ const keepersMap = new Map();
 
 function showMsg(text, ok = true) {
   const el = document.getElementById('msg');
-  el.className = ok ? 'success' : 'error';
+  el.className = ok ? 'modern-badge modern-badge-success' : 'modern-badge modern-badge-danger';
   el.textContent = text;
   el.classList.remove('hidden');
   setTimeout(() => el.classList.add('hidden'), 4000);
@@ -318,9 +353,21 @@ function getStatusClass(s) {
 }
 
 function renderStatusBadge(s) {
-  const cls = getStatusClass(s);
   const text = s || '';
-  return `<span class="badge ${cls}">${text}</span>`;
+  switch (s) {
+    case '在用':
+      return `<span class="modern-badge modern-badge-success">${text}</span>`;
+    case '闲置':
+      return `<span class="modern-badge" style="background: var(--gray-100); color: var(--gray-700);">${text}</span>`;
+    case '借用中':
+      return `<span class="modern-badge modern-badge-primary">${text}</span>`;
+    case '维修中':
+      return `<span class="modern-badge modern-badge-warning">${text}</span>`;
+    case '报废':
+      return `<span class="modern-badge modern-badge-danger">${text}</span>`;
+    default:
+      return `<span class="modern-badge">${text}</span>`;
+  }
 }
 
 function reloadAll() {

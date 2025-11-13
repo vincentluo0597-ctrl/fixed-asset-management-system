@@ -2,100 +2,639 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>设备管理</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/css/admin.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备管理 - 智能资产管理系统</title>
+    <link rel="stylesheet" href="/css/modern-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 设备管理特定样式 */
+        .equipment-header {
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+            color: white;
+            padding: var(--space-6) var(--space-8);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .equipment-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .equipment-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .equipment-subtitle {
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .search-filter-bar {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            margin-bottom: var(--space-6);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .filter-group label {
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-700);
+            font-size: var(--font-size-sm);
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: var(--space-2);
+            align-items: end;
+        }
+
+        .equipment-table-container {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+
+        .equipment-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+
+        .equipment-table th {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            font-weight: var(--font-weight-semibold);
+            text-align: left;
+            padding: var(--space-4);
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .equipment-table td {
+            padding: var(--space-4);
+            border-bottom: 1px solid var(--gray-100);
+            vertical-align: middle;
+        }
+
+        .equipment-table tbody tr {
+            transition: all var(--transition-fast);
+        }
+
+        .equipment-table tbody tr:hover {
+            background: var(--gray-50);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: var(--success-50);
+            color: var(--success-700);
+            border: 1px solid var(--success-200);
+        }
+
+        .status-idle {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .status-borrowed {
+            background: var(--warning-50);
+            color: var(--warning-700);
+            border: 1px solid var(--warning-200);
+        }
+
+        .status-maintenance {
+            background: var(--danger-50);
+            color: var(--danger-700);
+            border: 1px solid var(--danger-200);
+        }
+
+        .status-scrapped {
+            background: var(--danger-100);
+            color: var(--danger-800);
+            border: 1px solid var(--danger-300);
+        }
+
+        .action-buttons-cell {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .btn-icon-sm {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-md);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-icon-primary {
+            background: var(--primary-100);
+            color: var(--primary-600);
+        }
+
+        .btn-icon-primary:hover {
+            background: var(--primary-200);
+            transform: scale(1.1);
+        }
+
+        .btn-icon-warning {
+            background: var(--warning-100);
+            color: var(--warning-600);
+        }
+
+        .btn-icon-warning:hover {
+            background: var(--warning-200);
+            transform: scale(1.1);
+        }
+
+        .btn-icon-success {
+            background: var(--success-100);
+            color: var(--success-600);
+        }
+
+        .btn-icon-success:hover {
+            background: var(--success-200);
+            transform: scale(1.1);
+        }
+
+        .btn-icon-danger {
+            background: var(--danger-100);
+            color: var(--danger-600);
+        }
+
+        .btn-icon-danger:hover {
+            background: var(--danger-200);
+            transform: scale(1.1);
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+            margin-top: var(--space-8);
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+
+        .form-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-3);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .form-group label {
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-700);
+            font-size: var(--font-size-sm);
+        }
+
+        .form-group label.required::after {
+            content: ' *';
+            color: var(--danger-500);
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--gray-900);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            margin-top: var(--space-1);
+        }
+
+        .inventory-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            margin-top: var(--space-6);
+        }
+
+        .inventory-table {
+            font-size: var(--font-size-xs);
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: var(--space-2) var(--space-3);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .form-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .equipment-table {
+                font-size: var(--font-size-xs);
+            }
+            
+            .equipment-table th,
+            .equipment-table td {
+                padding: var(--space-2) var(--space-3);
+            }
+            
+            .action-buttons-cell {
+                flex-direction: column;
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-input-group {
+                flex-direction: column;
+            }
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+    </style>
 </head>
 <body>
-<nav class="admin-nav">
-    <div class="nav-brand">设备管理系统</div>
-    <div class="nav-links">
-        <a href="/admin">管理首页</a>
-        <a href="/admin/users">用户管理</a>
-        <a href="/admin/equipment">设备管理</a>
-        <a href="/admin/transfers">设备调用</a>
-        <a href="/admin/locations">位置管理</a>
-        <a href="/admin/categories">分类管理</a>
-        <a href="/admin/suppliers">供应商管理</a>
-    </div>
-</nav>
-
-<div class="admin-container">
-    <div class="page-header">
-        <h1>设备管理</h1>
-        <button class="btn btn-primary" onclick="reloadAll()">
-            <span class="icon">↻</span> 刷新数据
-        </button>
-    </div>
-
-    <div id="msg" class="alert hidden"></div>
-
-    <div class="card">
-        <div class="card-header">
-            <h2>设备列表</h2>
-            <div class="card-actions">
-                <button class="btn btn-secondary" onclick="exportCsv()">
-                    <span class="icon">📊</span> 导出 CSV
-                </button>
-                <label class="btn btn-secondary" style="margin-left:8px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-                    <span class="icon">📥</span> 导入 CSV
-                    <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCsv()" />
-                </label>
-            </div>
+    <!-- 现代化导航栏 -->
+    <nav class="modern-nav">
+        <div class="modern-flex-between">
+            <a href="/admin" class="modern-nav-brand">
+                <i class="fas fa-desktop"></i>
+                资产管理系统
+            </a>
+            <ul class="modern-nav-menu">
+                <li><a href="/admin" class="modern-nav-link">仪表板</a></li>
+                <li><a href="/admin/users" class="modern-nav-link">用户管理</a></li>
+                <li><a href="/admin/equipment" class="modern-nav-link active">设备管理</a></li>
+                <li><a href="/admin/transfers" class="modern-nav-link">设备调用</a></li>
+                <li><a href="/admin/locations" class="modern-nav-link">位置管理</a></li>
+                <li><a href="/admin/categories" class="modern-nav-link">分类管理</a></li>
+                <li><a href="/admin/suppliers" class="modern-nav-link">供应商管理</a></li>
+                <li><a href="/logout" class="modern-nav-link">退出登录</a></li>
+            </ul>
         </div>
-        
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label>状态筛选</label>
-                <select id="filterStatus" class="form-select" onchange="onFilterChanged()"></select>
+    </nav>
+
+    <div class="modern-container">
+        <!-- 页面头部 -->
+        <div class="equipment-header fade-in">
+            <h1 class="equipment-title">
+                <i class="fas fa-desktop"></i>
+                设备管理
+            </h1>
+            <p class="equipment-subtitle">全面管理设备资产，实时跟踪设备状态与位置</p>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="stats-overview fade-in">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--primary-100); color: var(--primary-600);">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalEquipment">-</div>
+                    <div class="stat-label">设备总数</div>
+                </div>
             </div>
-            
-            <div class="filter-group">
-                <label>分类筛选</label>
-                <select id="filterCategoryId" class="form-select" onchange="onFilterChanged()"></select>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--success-100); color: var(--success-600);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="activeEquipment">-</div>
+                    <div class="stat-label">在用设备</div>
+                </div>
             </div>
-            
-            <div class="filter-group">
-                <label>搜索</label>
-                <div class="search-input">
-                    <input id="searchKeyword" type="text" placeholder="名称/型号/品牌/序列号/资产编号" />
-                    <button class="btn btn-sm" onclick="onSearch()">搜索</button>
-                    <button class="btn btn-sm btn-secondary" onclick="clearFilter()">清空</button>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--warning-100); color: var(--warning-600);">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="maintenanceEquipment">-</div>
+                    <div class="stat-label">维修中设备</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--danger-100); color: var(--danger-600);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="lowStockEquipment">-</div>
+                    <div class="stat-label">低库存设备</div>
                 </div>
             </div>
         </div>
-        <div class="table-responsive">
-            <table id="equipmentTable" class="data-table">
+
+        <!-- 操作栏 -->
+        <div class="action-bar fade-in">
+            <div class="action-buttons">
+                <button class="modern-btn modern-btn-primary" onclick="showAddModal()">
+                    <i class="fas fa-plus"></i>
+                    添加设备
+                </button>
+                <button class="modern-btn modern-btn-secondary" onclick="reloadAll()">
+                    <i class="fas fa-sync-alt"></i>
+                    刷新数据
+                </button>
+                <button class="modern-btn modern-btn-outline" onclick="exportCsv()">
+                    <i class="fas fa-download"></i>
+                    导出CSV
+                </button>
+                <label class="modern-btn modern-btn-outline" style="cursor: pointer;">
+                    <i class="fas fa-upload"></i>
+                    导入CSV
+                    <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCsv()" />
+                </label>
+            </div>
+            <div class="modern-input-group" style="max-width: 300px;">
+                <input type="text" id="quickSearch" class="modern-input" placeholder="快速搜索设备..." onkeyup="onQuickSearch(event)">
+                <button class="modern-btn modern-btn-primary" onclick="onSearch()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="search-filter-bar fade-in">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>状态筛选</label>
+                    <select id="filterStatus" class="modern-select" onchange="onFilterChanged()">
+                        <option value="">全部状态</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>分类筛选</label>
+                    <select id="filterCategoryId" class="modern-select" onchange="onFilterChanged()">
+                        <option value="">全部分类</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>供应商</label>
+                    <select id="filterSupplierId" class="modern-select" onchange="onFilterChanged()">
+                        <option value="">全部供应商</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>存放位置</label>
+                    <select id="filterLocationId" class="modern-select" onchange="onFilterChanged()">
+                        <option value="">全部位置</option>
+                    </select>
+                </div>
+            </div>
+            <div class="search-input-group">
+                <div style="flex: 1;">
+                    <label>关键词搜索</label>
+                    <input type="text" id="searchKeyword" class="modern-input" placeholder="名称/型号/品牌/序列号/资产编号" onkeyup="onQuickSearch(event)">
+                </div>
+                <button class="modern-btn modern-btn-primary" onclick="onSearch()">
+                    <i class="fas fa-search"></i>
+                    搜索
+                </button>
+                <button class="modern-btn modern-btn-secondary" onclick="clearFilter()">
+                    <i class="fas fa-times"></i>
+                    清空
+                </button>
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="msg" class="modern-alert hidden"></div>
+
+        <!-- 设备表格 -->
+        <div class="equipment-table-container fade-in">
+            <table id="equipmentTable" class="equipment-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>名称</th>
-                        <th>状态</th>
+                        <th style="width: 60px;">ID</th>
+                        <th>设备名称</th>
+                        <th style="width: 100px;">状态</th>
                         <th>品牌</th>
                         <th>型号</th>
-                        <th>数量</th>
+                        <th style="width: 80px;">数量</th>
                         <th>分类</th>
                         <th>供应商</th>
                         <th>位置</th>
                         <th>保管人</th>
-                        <th>采购日期</th>
-                        <th>最近操作</th>
-                        <th>操作时间</th>
-                        <th>操作</th>
+                        <th style="width: 120px;">采购日期</th>
+                        <th style="width: 120px;">最近操作</th>
+                        <th style="width: 140px;">操作时间</th>
+                        <th style="width: 200px;">操作</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="equipmentTableBody">
+                    <tr>
+                        <td colspan="14" style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                            <i class="fas fa-spinner fa-spin" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-4);"></i>
+                            <div>正在加载设备数据...</div>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
-        <div class="pagination-bar">
+        <!-- 分页 -->
+        <div class="modern-pagination" id="paginationContainer">
             <div class="pagination-info">
                 <span id="pageInfo">第 1/1 页，共 0 条</span>
             </div>
             <div class="pagination-controls">
                 <div class="page-size">
                     <label>每页显示</label>
-                    <select id="pageSize" onchange="onPageSizeChanged()">
+                    <select id="pageSize" class="modern-select" onchange="onPageSizeChanged()">
                         <option value="5">5</option>
                         <option value="10" selected>10</option>
                         <option value="20">20</option>
@@ -103,789 +642,1349 @@
                     </select>
                 </div>
                 <div class="pagination-buttons">
-                    <button class="btn btn-sm" onclick="prevPage()">上一页</button>
-                    <button class="btn btn-sm" onclick="nextPage()">下一页</button>
+                    <button class="modern-btn modern-btn-sm" onclick="prevPage()" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i>
+                        上一页
+                    </button>
+                    <button class="modern-btn modern-btn-sm" onclick="nextPage()" id="nextBtn">
+                        下一页
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="form-section">
-        <div class="card">
-            <div class="card-header">
-                <h2>新增设备</h2>
-            </div>
-            <div class="card-body">
+        <!-- 表单区域 -->
+        <div class="form-section">
+            <!-- 添加设备表单 -->
+            <div class="form-card fade-in">
+                <div class="form-card-header">
+                    <h3><i class="fas fa-plus-circle"></i> 添加新设备</h3>
+                    <button type="button" class="modern-btn modern-btn-sm modern-btn-outline" onclick="resetAddForm()">
+                        <i class="fas fa-undo"></i>
+                        重置
+                    </button>
+                </div>
                 <form id="createForm" onsubmit="return submitCreate(event)">
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="required">设备名称</label>
-                            <input type="text" id="name" required placeholder="请输入设备名称">
+                            <input type="text" id="name" class="modern-input" required placeholder="请输入设备名称">
                         </div>
                         <div class="form-group">
                             <label class="required">设备状态</label>
-                            <select id="status" required></select>
+                            <select id="status" class="modern-select" required></select>
                         </div>
                         <div class="form-group">
                             <label>设备分类</label>
-                            <select id="categoryId"></select>
+                            <select id="categoryId" class="modern-select">
+                                <option value="">选择分类</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>供应商</label>
-                            <select id="supplierId"></select>
+                            <select id="supplierId" class="modern-select">
+                                <option value="">选择供应商</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>品牌</label>
-                            <input type="text" id="brand" placeholder="可选">
+                            <input type="text" id="brand" class="modern-input" placeholder="可选">
                         </div>
                         <div class="form-group">
                             <label>型号</label>
-                            <input type="text" id="model" placeholder="可选">
+                            <input type="text" id="model" class="modern-input" placeholder="可选">
                         </div>
                         <div class="form-group">
                             <label>数量</label>
-                            <input type="number" id="quantity" min="0" value="1">
+                            <input type="number" id="quantity" class="modern-input" min="0" value="1">
                         </div>
                         <div class="form-group">
                             <label>存放位置</label>
-                            <select id="locationId"></select>
+                            <select id="locationId" class="modern-select">
+                                <option value="">选择位置</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>保管人</label>
-                            <select id="keeperId"></select>
+                            <select id="keeperId" class="modern-select">
+                                <option value="">选择保管人</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>采购日期</label>
-                            <input type="date" id="purchaseDate">
+                            <input type="date" id="purchaseDate" class="modern-input">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="grid-column: 1 / -1;">
                             <label>备注</label>
-                            <input type="text" id="remarks" placeholder="可选">
+                            <input type="text" id="remarks" class="modern-input" placeholder="可选">
                         </div>
                     </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">添加设备</button>
-                        <button type="reset" class="btn btn-secondary">重置</button>
+                    <div class="modern-flex" style="gap: var(--space-3); margin-top: var(--space-4);">
+                        <button type="submit" class="modern-btn modern-btn-primary">
+                            <i class="fas fa-save"></i>
+                            添加设备
+                        </button>
+                        <button type="reset" class="modern-btn modern-btn-secondary">
+                            <i class="fas fa-undo"></i>
+                            重置表单
+                        </button>
                     </div>
                 </form>
-                <div id="createMsg" class="alert hidden"></div>
+                <div id="createMsg" class="modern-alert hidden"></div>
+            </div>
+
+            <!-- 编辑设备表单 -->
+            <div class="form-card fade-in">
+                <div class="form-card-header">
+                    <h3><i class="fas fa-edit"></i> 编辑设备</h3>
+                    <div class="modern-flex" style="gap: var(--space-2);">
+                        <button type="button" class="modern-btn modern-btn-sm modern-btn-outline" onclick="loadEquipmentForEdit()">
+                            <i class="fas fa-search"></i>
+                            加载设备
+                        </button>
+                        <button type="button" class="modern-btn modern-btn-sm modern-btn-danger" onclick="confirmDelete()">
+                            <i class="fas fa-trash"></i>
+                            删除设备
+                        </button>
+                    </div>
+                </div>
+                <form id="editForm" onsubmit="return submitUpdate(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>设备ID</label>
+                            <input type="number" id="editId" class="modern-input" readonly placeholder="选择设备后自动填充">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">设备名称</label>
+                            <input type="text" id="editName" class="modern-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="required">设备状态</label>
+                            <select id="editStatus" class="modern-select" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>设备分类</label>
+                            <select id="editCategoryId" class="modern-select">
+                                <option value="">选择分类</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>供应商</label>
+                            <select id="editSupplierId" class="modern-select">
+                                <option value="">选择供应商</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>品牌</label>
+                            <input type="text" id="editBrand" class="modern-input">
+                        </div>
+                        <div class="form-group">
+                            <label>型号</label>
+                            <input type="text" id="editModel" class="modern-input">
+                        </div>
+                        <div class="form-group">
+                            <label>数量</label>
+                            <input type="number" id="editQuantity" class="modern-input" min="0" placeholder="不填则保持原值">
+                        </div>
+                        <div class="form-group">
+                            <label>存放位置</label>
+                            <select id="editLocationId" class="modern-select">
+                                <option value="">选择位置</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>保管人</label>
+                            <select id="editKeeperId" class="modern-select">
+                                <option value="">选择保管人</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>采购日期</label>
+                            <input type="date" id="editPurchaseDate" class="modern-input">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>备注</label>
+                            <input type="text" id="editRemarks" class="modern-input">
+                        </div>
+                    </div>
+                    <div class="modern-flex" style="gap: var(--space-3); margin-top: var(--space-4);">
+                        <button type="submit" class="modern-btn modern-btn-primary">
+                            <i class="fas fa-save"></i>
+                            保存更新
+                        </button>
+                        <button type="button" class="modern-btn modern-btn-secondary" onclick="resetEditForm()">
+                            <i class="fas fa-undo"></i>
+                            重置
+                        </button>
+                    </div>
+                </form>
+                <div id="editMsg" class="modern-alert hidden"></div>
             </div>
         </div>
 
-<h3 style="margin-top:16px;">最近盘库记录（Top 10）</h3>
-<div id="recentInvMsg" class="hidden"></div>
-<table id="recentInventoryTable" style="margin-top:8px;">
-  <thead>
-    <tr>
-      <th>记录ID</th>
-      <th>创建时间</th>
-      <th>来源</th>
-      <th>备注</th>
-      <th>调整后数量</th>
-      <th>调整原因</th>
-      <th>登记人</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-  <caption style="caption-side: bottom; text-align:left; font-size:12px; color:#666;">说明：登记盘库后将自动刷新该列表；登记人来源于针对 InventoryRecord 的 CREATE 操作日志。</caption>
-</table>
-
-<h2 style="margin-top:24px;">编辑设备</h2>
-<form id="editForm" onsubmit="return submitUpdate(event)">
-  <div class="form-grid">
-    <div class="form-item">
-      <label>设备ID</label>
-      <input type="number" id="editId" readonly placeholder="选择一行或点击“编辑”按钮">
-    </div>
-    <div class="form-item">
-      <label>名称（必填）</label>
-      <input type="text" id="editName" required>
-    </div>
-    <div class="form-item">
-      <label>状态（必填）</label>
-      <select id="editStatus" required></select>
-    </div>
-    <div class="form-item">
-      <label>分类</label>
-      <select id="editCategoryId"></select>
-    </div>
-        <div class="form-item">
-          <label>供应商ID</label>
-          <select id="editSupplierId"></select>
+        <!-- 盘库记录 -->
+        <div class="inventory-section fade-in">
+            <div class="modern-card-header">
+                <h3><i class="fas fa-clipboard-check"></i> 最近盘库记录</h3>
+                <span class="modern-badge modern-badge-info">Top 10</span>
+            </div>
+            <div id="recentInvMsg" class="modern-alert hidden"></div>
+            <div class="modern-table-container">
+                <table id="recentInventoryTable" class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>记录ID</th>
+                            <th>创建时间</th>
+                            <th>来源</th>
+                            <th>备注</th>
+                            <th>调整后数量</th>
+                            <th>调整原因</th>
+                            <th>登记人</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: var(--space-4); color: var(--gray-500);">
+                                <i class="fas fa-info-circle"></i>
+                                选择设备后显示盘库记录
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    <div class="form-item">
-      <label>品牌</label>
-      <input type="text" id="editBrand">
     </div>
-    <div class="form-item">
-      <label>型号</label>
-      <input type="text" id="editModel">
-    </div>
-    <div class="form-item">
-      <label>数量</label>
-      <input type="number" id="editQuantity" min="0" placeholder="不填则保持原值">
-    </div>
-        <div class="form-item">
-          <label>位置ID</label>
-          <select id="editLocationId"></select>
+
+    <!-- 添加设备模态框 -->
+    <div id="addModal" class="modern-modal">
+        <div class="modern-modal-content" style="max-width: 800px;">
+            <div class="modern-modal-header">
+                <h3><i class="fas fa-plus-circle"></i> 添加新设备</h3>
+                <button class="modern-btn modern-btn-sm modern-btn-ghost" onclick="hideAddModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modern-modal-body">
+                <form id="modalCreateForm" onsubmit="return submitModalCreate(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="required">设备名称</label>
+                            <input type="text" id="modalName" class="modern-input" required placeholder="请输入设备名称">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">设备状态</label>
+                            <select id="modalStatus" class="modern-select" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>设备分类</label>
+                            <div class="modern-flex" style="gap: var(--space-2);">
+                                <select id="modalCategoryId" class="modern-select">
+                                    <option value="">选择分类</option>
+                                </select>
+                                <button type="button" class="modern-btn modern-btn-sm modern-btn-outline" onclick="quickCreateCategory()">
+                                    <i class="fas fa-plus"></i>
+                                    新建
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>供应商</label>
+                            <div class="modern-flex" style="gap: var(--space-2);">
+                                <select id="modalSupplierId" class="modern-select">
+                                    <option value="">选择供应商</option>
+                                </select>
+                                <button type="button" class="modern-btn modern-btn-sm modern-btn-outline" onclick="quickCreateSupplier()">
+                                    <i class="fas fa-plus"></i>
+                                    新建
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>品牌</label>
+                            <input type="text" id="modalBrand" class="modern-input" placeholder="可选">
+                        </div>
+                        <div class="form-group">
+                            <label>型号</label>
+                            <input type="text" id="modalModel" class="modern-input" placeholder="可选">
+                        </div>
+                        <div class="form-group">
+                            <label>数量</label>
+                            <input type="number" id="modalQuantity" class="modern-input" min="0" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>存放位置</label>
+                            <div class="modern-flex" style="gap: var(--space-2);">
+                                <select id="modalLocationId" class="modern-select">
+                                    <option value="">选择位置</option>
+                                </select>
+                                <button type="button" class="modern-btn modern-btn-sm modern-btn-outline" onclick="quickCreateLocation()">
+                                    <i class="fas fa-plus"></i>
+                                    新建
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>保管人</label>
+                            <select id="modalKeeperId" class="modern-select">
+                                <option value="">选择保管人</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>采购日期</label>
+                            <input type="date" id="modalPurchaseDate" class="modern-input">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>备注</label>
+                            <textarea id="modalRemarks" class="modern-textarea" placeholder="可选备注信息" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modern-modal-footer">
+                        <button type="submit" class="modern-btn modern-btn-primary">
+                            <i class="fas fa-save"></i>
+                            添加设备
+                        </button>
+                        <button type="button" class="modern-btn modern-btn-secondary" onclick="hideAddModal()">
+                            取消
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="form-item">
-          <label>保管人ID</label>
-          <select id="editKeeperId"></select>
-        </div>
-    <div class="form-item">
-      <label>采购日期</label>
-      <input type="date" id="editPurchaseDate">
     </div>
-    <div class="form-item">
-      <label>备注</label>
-      <input type="text" id="editRemarks">
-    </div>
-  </div>
-  <div class="actions">
-    <button type="submit">保存更新</button>
-    <button type="button" class="danger" onclick="confirmDelete()">删除该设备</button>
-  </div>
-  <div id="editMsg" class="hidden"></div>
-  <div style="margin-top:8px; font-size:12px; color:#888;">更新接口：PUT /api/equipment/{id}（EquipmentDTO）；删除接口：DELETE /api/equipment/{id}</div>
-</form>
 
-<script>
-const API_BASE = '/api';
-// 缓存字典，用于在表格中通过ID显示名称
-const categoriesMap = new Map();
-const suppliersMap = new Map();
-const locationsMap = new Map();
-const keepersMap = new Map();
+    <script>
+        const API_BASE = '/api';
+        
+        // 缓存字典
+        const categoriesMap = new Map();
+        const suppliersMap = new Map();
+        const locationsMap = new Map();
+        const keepersMap = new Map();
 
-function showMsg(text, ok = true) {
-  const el = document.getElementById('msg');
-  el.className = ok ? 'success' : 'error';
-  el.textContent = text;
-  el.classList.remove('hidden');
-  setTimeout(() => el.classList.add('hidden'), 4000);
-}
+        // 分页和筛选
+        let currentPage = 0;
+        let pageSize = 10;
+        let totalPages = 0;
+        let totalElements = 0;
+        const filters = { 
+            status: null, 
+            categoryId: null, 
+            keyword: null, 
+            supplierId: null, 
+            locationId: null, 
+            keeperId: null 
+        };
 
-function setCreateMsg(text, ok = true) {
-  const el = document.getElementById('createMsg');
-  el.className = ok ? 'success' : 'error';
-  el.textContent = text;
-  el.classList.remove('hidden');
-  setTimeout(() => el.classList.add('hidden'), 5000);
-}
+        // 显示消息
+        function showMsg(text, type = 'success') {
+            const msgEl = document.getElementById('msg');
+            msgEl.textContent = text;
+            msgEl.className = `modern-alert modern-alert-${type}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 4000);
+        }
 
-async function fetchJson(url, options = {}) {
-  const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`HTTP ${resp.status}: ${txt}`);
-  }
-  const ct = resp.headers.get('content-type') || '';
-  if (ct.includes('application/json')) return resp.json();
-  return resp.text();
-}
+        function setCreateMsg(text, type = 'success') {
+            const msgEl = document.getElementById('createMsg');
+            msgEl.textContent = text;
+            msgEl.className = `modern-alert modern-alert-${type}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 5000);
+        }
 
-function toDateTimeLocal(dateStr) {
-  if (!dateStr) return '';
-  try { return new Date(dateStr).toLocaleString(); } catch(e) { return dateStr; }
-}
+        function setEditMsg(text, type = 'success') {
+            const msgEl = document.getElementById('editMsg');
+            msgEl.textContent = text;
+            msgEl.className = `modern-alert modern-alert-${type}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 5000);
+        }
 
-// 操作日志缓存与查询（设备最近操作人/时间）
-const latestOpCache = new Map(); // key: `${type}:${id}:${action||''}`
-async function fetchLatestOperationLog(entityType, entityId, action) {
-  const key = `${entityType}:${entityId}:${action || ''}`;
-  if (latestOpCache.has(key)) return latestOpCache.get(key);
-  try {
-    const params = new URLSearchParams();
-    params.set('entityType', entityType);
-    params.set('entityId', String(entityId));
-    if (action) params.set('action', action);
-    const log = await fetchJson(`${API_BASE}/operation-logs/latest?` + params.toString());
-    latestOpCache.set(key, log || null);
-    return log || null;
-  } catch (err) {
-    latestOpCache.set(key, null);
-    return null;
-  }
-}
+        // API请求
+        async function fetchJson(url, options = {}) {
+            const resp = await fetch(url, { 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }, 
+                ...options 
+            });
+            if (!resp.ok) {
+                const txt = await resp.text();
+                throw new Error(`HTTP ${resp.status}: ${txt}`);
+            }
+            const ct = resp.headers.get('content-type') || '';
+            if (ct.includes('application/json')) return resp.json();
+            return resp.text();
+        }
 
-async function renderEquipmentTable(list) {
-  const tbody = document.querySelector('#equipmentTable tbody');
-  tbody.innerHTML = '';
-  for (const e of list) {
-    const tr = document.createElement('tr');
-    const categoryName = categoriesMap.get(e.categoryId) || e.categoryId || '';
-    const supplierName = suppliersMap.get(e.supplierId) || e.supplierId || '';
-    const locationName = locationsMap.get(e.locationId) || e.locationId || '';
-    const keeperName = keepersMap.get(e.keeperId) || e.keeperId || '';
-    const latestLog = await fetchLatestOperationLog('Equipment', e.id, null);
-    const latestActor = latestLog && latestLog.actor ? latestLog.actor : '';
-    const latestTime = latestLog && latestLog.createdAt ? toDateTimeLocal(latestLog.createdAt) : '';
-    tr.innerHTML = `
-      <td>${e.id ?? ''}</td>
-      <td>${e.name ?? ''}</td>
-      <td>${e.status ?? ''}</td>
-      <td>${e.brand ?? ''}</td>
-      <td>${e.model ?? ''}</td>
-      <td>${e.quantity ?? ''}</td>
-      <td>${categoryName}</td>
-      <td>${supplierName}</td>
-      <td>${locationName}</td>
-      <td>${keeperName}</td>
-      <td>${e.purchaseDate ?? ''}</td>
-      <td>${latestActor}</td>
-      <td>${latestTime}</td>
-      <td>
-        <button onclick="invokeEquipment(${encodeId(e.id)})">调用</button>
-        <button onclick="setEditForm(${encodeId(e.id)})">编辑</button>
-        <button onclick="createInventoryRecord(${encodeId(e.id)})">登记盘库</button>
-        <button class="danger" onclick="deleteEquipment(${encodeId(e.id)})">删除</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
+        // 状态样式映射
+        function getStatusStyle(status) {
+            const styles = {
+                '在用': 'status-active',
+                '闲置': 'status-idle',
+                '借用中': 'status-borrowed',
+                '维修中': 'status-maintenance',
+                '报废': 'status-scrapped'
+            };
+            return styles[status] || 'status-idle';
+        }
 
-let currentPage = 0;
-let pageSize = 10;
-let totalPages = 0;
-let totalElements = 0;
-const filters = { status: null, categoryId: null, keyword: null, supplierId: null, locationId: null, keeperId: null };
+        // 渲染设备表格
+        async function renderEquipmentTable(list) {
+            const tbody = document.getElementById('equipmentTableBody');
+            
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="14" style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                            <i class="fas fa-inbox" style="font-size: var(--font-size-3xl); margin-bottom: var(--space-4);"></i>
+                            <div>暂无设备数据</div>
+                            <div style="font-size: var(--font-size-sm); margin-top: var(--space-2);">点击上方"添加设备"按钮创建第一个设备</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
 
-function updatePageInfo() {
-  const info = document.getElementById('pageInfo');
-  info.textContent = `第 ${Math.min(currentPage + 1, Math.max(totalPages, 1))}/${Math.max(totalPages, 1)} 页，共 ${totalElements} 条`;
-}
+            tbody.innerHTML = '';
+            
+            for (const equipment of list) {
+                const tr = document.createElement('tr');
+                const categoryName = categoriesMap.get(equipment.categoryId) || equipment.categoryId || '-';
+                const supplierName = suppliersMap.get(equipment.supplierId) || equipment.supplierId || '-';
+                const locationName = locationsMap.get(equipment.locationId) || equipment.locationId || '-';
+                const keeperName = keepersMap.get(equipment.keeperId) || equipment.keeperId || '-';
+                
+                // 获取最近操作信息
+                const latestLog = await fetchLatestOperationLog('Equipment', equipment.id, null);
+                const latestActor = latestLog && latestLog.actor ? latestLog.actor : '-';
+                const latestTime = latestLog && latestLog.createdAt ? 
+                    new Date(latestLog.createdAt).toLocaleString() : '-';
 
-async function loadEquipment() {
-  // 使用 /api/equipment/query 进行分页与筛选
-  try {
-    const params = new URLSearchParams();
-    params.set('page', String(currentPage));
-    params.set('size', String(pageSize));
-    if (filters.status) params.set('status', filters.status);
-    if (filters.categoryId) params.set('categoryId', String(filters.categoryId));
-    if (filters.keyword && filters.keyword.trim() !== '') params.set('keyword', filters.keyword.trim());
-    if (filters.supplierId) params.set('supplierId', String(filters.supplierId));
-    if (filters.locationId) params.set('locationId', String(filters.locationId));
-    if (filters.keeperId) params.set('keeperId', String(filters.keeperId));
-    const page = await fetchJson(`${API_BASE}/equipment/query?` + params.toString());
-    const list = page.content || [];
-    totalPages = page.totalPages ?? 1;
-    totalElements = page.totalElements ?? list.length;
-    await renderEquipmentTable(list);
-    updatePageInfo();
-    showMsg(`已加载设备 ${list.length} 条（当前页）`);
-  } catch (err) {
-    console.error(err);
-    showMsg(`加载设备失败：${err.message}`, false);
-  }
-}
+                tr.innerHTML = `
+                    <td><span class="modern-badge modern-badge-primary">${equipment.id}</span></td>
+                    <td>
+                        <div style="font-weight: var(--font-weight-medium);">${equipment.name}</div>
+                        ${equipment.brand || equipment.model ? 
+                            `<div style="font-size: var(--font-size-xs); color: var(--gray-600);">
+                                ${equipment.brand || ''} ${equipment.model || ''}
+                            </div>` : ''}
+                    </td>
+                    <td><span class="status-badge ${getStatusStyle(equipment.status)}">${equipment.status}</span></td>
+                    <td>${equipment.brand || '-'}</td>
+                    <td>${equipment.model || '-'}</td>
+                    <td><span class="modern-badge">${equipment.quantity}</span></td>
+                    <td><span class="modern-badge modern-badge-outline">${categoryName}</span></td>
+                    <td>${supplierName}</td>
+                    <td>${locationName}</td>
+                    <td>${keeperName}</td>
+                    <td>${equipment.purchaseDate || '-'}</td>
+                    <td><span class="modern-badge modern-badge-sm">${latestActor}</span></td>
+                    <td><small style="color: var(--gray-600);">${latestTime}</small></td>
+                    <td>
+                        <div class="action-buttons-cell">
+                            <button class="btn-icon-sm btn-icon-warning" onclick="invokeEquipment(${equipment.id})" title="调用设备">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                            <button class="btn-icon-sm btn-icon-primary" onclick="setEditForm(${equipment.id})" title="编辑设备">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon-sm btn-icon-success" onclick="createInventoryRecord(${equipment.id})" title="登记盘库">
+                                <i class="fas fa-clipboard-check"></i>
+                            </button>
+                            <button class="btn-icon-sm btn-icon-danger" onclick="deleteEquipment(${equipment.id})" title="删除设备">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
 
-async function loadCategories() {
-  const sel = document.getElementById('categoryId');
-  sel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list = await fetchJson(`${API_BASE}/equipment-categories`);
-    list.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = `${c.name} (ID=${c.id})`;
-      sel.appendChild(opt);
-      categoriesMap.set(c.id, c.name);
-    });
-  } catch (err) {
-    console.warn('分类加载失败：', err);
-  }
-  // 同步编辑表单的分类下拉
-  const editSel = document.getElementById('editCategoryId');
-  const cacheVal = editSel.value;
-  editSel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list2 = await fetchJson(`${API_BASE}/equipment-categories`);
-    list2.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = `${c.name} (ID=${c.id})`;
-      editSel.appendChild(opt);
-      categoriesMap.set(c.id, c.name);
-    });
-    editSel.value = cacheVal;
-  } catch (err) {
-    console.warn('编辑表单分类下拉加载失败：', err);
-  }
-  // 同步筛选下拉
-  const filterSel = document.getElementById('filterCategoryId');
-  const cacheFilterVal = filterSel.value;
-  filterSel.innerHTML = '<option value="">（全部）</option>';
-  categoriesMap.forEach((name, id) => {
-    const opt = document.createElement('option');
-    opt.value = id;
-    opt.textContent = name + ` (ID=${id})`;
-    filterSel.appendChild(opt);
-  });
-  filterSel.value = cacheFilterVal || '';
-}
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const equipmentResponse = await fetchJson(`${API_BASE}/equipment`);
+                const equipmentList = equipmentResponse.content || equipmentResponse;
+                
+                const total = equipmentList.length;
+                const active = equipmentList.filter(item => item.status === '在用').length;
+                const maintenance = equipmentList.filter(item => item.status === '维修中').length;
+                const lowStock = equipmentList.filter(item => item.quantity < 5).length;
 
-async function loadSuppliers() {
-  const sel = document.getElementById('supplierId');
-  sel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list = await fetchJson(`${API_BASE}/suppliers`);
-    list.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = `${s.name} (ID=${s.id})`;
-      sel.appendChild(opt);
-      suppliersMap.set(s.id, s.name);
-    });
-  } catch (err) {
-    console.warn('供应商加载失败：', err);
-  }
-  const editSel = document.getElementById('editSupplierId');
-  const cacheVal = editSel.value;
-  editSel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list2 = await fetchJson(`${API_BASE}/suppliers`);
-    list2.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = `${s.name} (ID=${s.id})`;
-      editSel.appendChild(opt);
-      suppliersMap.set(s.id, s.name);
-    });
-    editSel.value = cacheVal;
-  } catch (err) {
-    console.warn('编辑表单供应商下拉加载失败：', err);
-  }
-}
+                // 动画更新数字
+                animateNumber('totalEquipment', total);
+                animateNumber('activeEquipment', active);
+                animateNumber('maintenanceEquipment', maintenance);
+                animateNumber('lowStockEquipment', lowStock);
 
-async function loadLocations() {
-  const sel = document.getElementById('locationId');
-  sel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list = await fetchJson(`${API_BASE}/locations`);
-    list.forEach(l => {
-      const opt = document.createElement('option');
-      opt.value = l.id;
-      opt.textContent = `${l.name} (ID=${l.id})`;
-      sel.appendChild(opt);
-      locationsMap.set(l.id, l.name);
-    });
-  } catch (err) {
-    console.warn('位置加载失败：', err);
-  }
-  const editSel = document.getElementById('editLocationId');
-  const cacheVal = editSel.value;
-  editSel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list2 = await fetchJson(`${API_BASE}/locations`);
-    list2.forEach(l => {
-      const opt = document.createElement('option');
-      opt.value = l.id;
-      opt.textContent = `${l.name} (ID=${l.id})`;
-      editSel.appendChild(opt);
-      locationsMap.set(l.id, l.name);
-    });
-    editSel.value = cacheVal;
-  } catch (err) {
-    console.warn('编辑表单位置下拉加载失败：', err);
-  }
-}
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
 
-async function loadKeepers() {
-  const sel = document.getElementById('keeperId');
-  sel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list = await fetchJson(`${API_BASE}/admin/users`);
-    list.forEach(u => {
-      const name = u.displayName || u.username || `用户${u.id}`;
-      const opt = document.createElement('option');
-      opt.value = u.id;
-      opt.textContent = `${name} (ID=${u.id})`;
-      sel.appendChild(opt);
-      keepersMap.set(u.id, name);
-    });
-  } catch (err) {
-    console.warn('保管人加载失败：', err);
-  }
-  const editSel = document.getElementById('editKeeperId');
-  const cacheVal = editSel.value;
-  editSel.innerHTML = '<option value="">（未选择）</option>';
-  try {
-    const list2 = await fetchJson(`${API_BASE}/admin/users`);
-    list2.forEach(u => {
-      const name = u.displayName || u.username || `用户${u.id}`;
-      const opt = document.createElement('option');
-      opt.value = u.id;
-      opt.textContent = `${name} (ID=${u.id})`;
-      editSel.appendChild(opt);
-      keepersMap.set(u.id, name);
-    });
-    editSel.value = cacheVal;
-  } catch (err) {
-    console.warn('编辑表单保管人下拉加载失败：', err);
-  }
-}
+        // 数字动画
+        function animateNumber(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const startValue = parseInt(element.textContent) || 0;
+            const duration = 1000;
+            const startTime = performance.now();
 
-function initStatusOptions() {
-  const statuses = ['在用','闲置','借用中','维修中','报废'];
-  const sel = document.getElementById('status');
-  statuses.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s;
-    opt.textContent = s;
-    sel.appendChild(opt);
-  });
-  const editSel = document.getElementById('editStatus');
-  statuses.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s;
-    opt.textContent = s;
-    editSel.appendChild(opt);
-  });
-  // 过滤下拉
-  const filterSel = document.getElementById('filterStatus');
-  filterSel.innerHTML = '<option value="">（全部）</option>';
-  statuses.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s;
-    opt.textContent = s;
-    filterSel.appendChild(opt);
-  });
-}
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+                
+                element.textContent = currentValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+            
+            requestAnimationFrame(updateNumber);
+        }
 
-async function submitCreate(ev) {
-  ev.preventDefault();
-  const payload = {
-    name: document.getElementById('name').value.trim(),
-    status: document.getElementById('status').value,
-    categoryId: parseNullableInt(document.getElementById('categoryId').value),
-    supplierId: parseNullableInt(document.getElementById('supplierId').value),
-    brand: nullIfEmpty(document.getElementById('brand').value),
-    model: nullIfEmpty(document.getElementById('model').value),
-    quantity: (function(){ const v = parseNullableInt(document.getElementById('quantity').value); return v != null ? v : 1; })(),
-    locationId: parseNullableInt(document.getElementById('locationId').value),
-    keeperId: parseNullableInt(document.getElementById('keeperId').value),
-    purchaseDate: nullIfEmpty(document.getElementById('purchaseDate').value),
-    remarks: nullIfEmpty(document.getElementById('remarks').value)
-  };
-  try {
-    const created = await fetchJson(`${API_BASE}/equipment`, { method: 'POST', body: JSON.stringify(payload) });
-    setCreateMsg(`新增成功，ID=${created.id}`);
-    document.getElementById('createForm').reset();
-    await loadEquipment();
-  } catch (err) {
-    console.error(err);
-    setCreateMsg(`新增失败：${err.message}`, false);
-  }
-}
+        // 加载设备列表
+        async function loadEquipment() {
+            try {
+                const params = new URLSearchParams();
+                params.set('page', String(currentPage));
+                params.set('size', String(pageSize));
+                
+                if (filters.status) params.set('status', filters.status);
+                if (filters.categoryId) params.set('categoryId', String(filters.categoryId));
+                if (filters.keyword && filters.keyword.trim() !== '') params.set('keyword', filters.keyword.trim());
+                if (filters.supplierId) params.set('supplierId', String(filters.supplierId));
+                if (filters.locationId) params.set('locationId', String(filters.locationId));
+                if (filters.keeperId) params.set('keeperId', String(filters.keeperId));
 
-function setEditFormByData(e) {
-  document.getElementById('editId').value = e.id ?? '';
-  document.getElementById('editName').value = e.name ?? '';
-  document.getElementById('editStatus').value = e.status ?? '';
-  document.getElementById('editCategoryId').value = e.categoryId ?? '';
-  document.getElementById('editSupplierId').value = e.supplierId ?? '';
-  document.getElementById('editBrand').value = e.brand ?? '';
-  document.getElementById('editModel').value = e.model ?? '';
-  document.getElementById('editQuantity').value = (typeof e.quantity === 'number') ? e.quantity : '';
-  document.getElementById('editLocationId').value = e.locationId ?? '';
-  document.getElementById('editKeeperId').value = e.keeperId ?? '';
-  document.getElementById('editPurchaseDate').value = e.purchaseDate ?? '';
-  document.getElementById('editRemarks').value = e.remarks ?? '';
-}
+                const page = await fetchJson(`${API_BASE}/equipment/query?` + params.toString());
+                const list = page.content || [];
+                totalPages = page.totalPages || 1;
+                totalElements = page.totalElements || list.length;
 
-function encodeId(id) { return typeof id === 'number' ? id : (id ?? ''); }
+                await renderEquipmentTable(list);
+                updatePageInfo();
+                
+                // 更新统计
+                loadStats();
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`加载设备失败：${err.message}`, 'error');
+            }
+        }
 
-async function setEditForm(id) {
-  if (!id) { setEditMsg('请先选择有效的设备ID', false); return; }
-  try {
-    const e = await fetchJson(`${API_BASE}/equipment/${id}`);
-    setEditFormByData(e);
-    setEditMsg('已载入设备数据，可编辑后保存');
-    // 加载最近盘库记录
-    await loadRecentInventoryRecords(e.id);
-  } catch (err) {
-    console.error(err);
-    setEditMsg(`载入设备失败：${err.message}`, false);
-  }
-}
+        // 更新分页信息
+        function updatePageInfo() {
+            const pageInfo = document.getElementById('pageInfo');
+            pageInfo.textContent = `第 ${Math.min(currentPage + 1, Math.max(totalPages, 1))}/${Math.max(totalPages, 1)} 页，共 ${totalElements} 条`;
 
-function setEditMsg(text, ok = true) {
-  const el = document.getElementById('editMsg');
-  el.className = ok ? 'success' : 'error';
-  el.textContent = text;
-  el.classList.remove('hidden');
-  setTimeout(() => el.classList.add('hidden'), 5000);
-}
+            // 更新按钮状态
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
+        }
 
-async function submitUpdate(ev) {
-  ev.preventDefault();
-  const id = parseNullableInt(document.getElementById('editId').value);
-  if (!id) { setEditMsg('缺少设备ID，请先在列表点击“编辑”加载数据', false); return; }
-  const payload = {
-    name: document.getElementById('editName').value.trim(),
-    status: document.getElementById('editStatus').value,
-    categoryId: parseNullableInt(document.getElementById('editCategoryId').value),
-    supplierId: parseNullableInt(document.getElementById('editSupplierId').value),
-    brand: nullIfEmpty(document.getElementById('editBrand').value),
-    model: nullIfEmpty(document.getElementById('editModel').value),
-    quantity: parseNullableInt(document.getElementById('editQuantity').value),
-    locationId: parseNullableInt(document.getElementById('editLocationId').value),
-    keeperId: parseNullableInt(document.getElementById('editKeeperId').value),
-    purchaseDate: nullIfEmpty(document.getElementById('editPurchaseDate').value),
-    remarks: nullIfEmpty(document.getElementById('editRemarks').value)
-  };
-  try {
-    const updated = await fetchJson(`${API_BASE}/equipment/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
-    setEditMsg(`更新成功，ID=${updated.id}`);
-    await loadEquipment();
-  } catch (err) {
-    console.error(err);
-    setEditMsg(`更新失败：${err.message}`, false);
-  }
-}
+        // 加载下拉选项
+        async function loadCategories() {
+            const selects = ['categoryId', 'editCategoryId', 'modalCategoryId', 'filterCategoryId'];
+            
+            for (const selectId of selects) {
+                const select = document.getElementById(selectId);
+                const isFilter = selectId.includes('filter');
+                
+                select.innerHTML = isFilter ? 
+                    '<option value="">全部分类</option>' : 
+                    '<option value="">选择分类</option>';
+            }
 
-async function deleteEquipment(id) {
-  if (!id) { setEditMsg('缺少设备ID', false); return; }
-  if (!confirm('确认删除该设备？')) return;
-  try {
-    const resp = await fetch(`${API_BASE}/equipment/${id}`, { method: 'DELETE' });
-    if (!resp.ok) throw new Error(await resp.text());
-    setEditMsg('删除成功');
-    await loadEquipment();
-  } catch (err) {
-    console.error(err);
-    setEditMsg(`删除失败：${err.message}`, false);
-  }
-}
+            try {
+                const list = await fetchJson(`${API_BASE}/equipment-categories`);
+                list.forEach(category => {
+                    categoriesMap.set(category.id, category.name);
+                    
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = `${category.name} (ID=${category.id})`;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (err) {
+                console.warn('分类加载失败:', err);
+            }
+        }
 
-async function filterByStatus() {
-  const s = document.getElementById('filterStatus').value;
-  filters.status = s || null;
-  currentPage = 0;
-  await loadEquipment();
-}
+        async function loadSuppliers() {
+            const selects = ['supplierId', 'editSupplierId', 'modalSupplierId', 'filterSupplierId'];
+            
+            for (const selectId of selects) {
+                const select = document.getElementById(selectId);
+                const isFilter = selectId.includes('filter');
+                
+                select.innerHTML = isFilter ? 
+                    '<option value="">全部供应商</option>' : 
+                    '<option value="">选择供应商</option>';
+            }
 
-async function clearFilter() {
-  document.getElementById('filterStatus').value = '';
-  document.getElementById('filterCategoryId').value = '';
-  document.getElementById('searchKeyword').value = '';
-  filters.status = null;
-  filters.categoryId = null;
-  filters.keyword = null;
-  filters.supplierId = null;
-  filters.locationId = null;
-  filters.keeperId = null;
-  currentPage = 0;
-  await loadEquipment();
-}
+            try {
+                const list = await fetchJson(`${API_BASE}/suppliers`);
+                list.forEach(supplier => {
+                    suppliersMap.set(supplier.id, supplier.name);
+                    
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        const option = document.createElement('option');
+                        option.value = supplier.id;
+                        option.textContent = `${supplier.name} (ID=${supplier.id})`;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (err) {
+                console.warn('供应商加载失败:', err);
+            }
+        }
 
-function parseNullableInt(val) {
-  if (!val || val === '') return null;
-  const n = parseInt(val, 10);
-  return isNaN(n) ? null : n;
-}
+        async function loadLocations() {
+            const selects = ['locationId', 'editLocationId', 'modalLocationId', 'filterLocationId'];
+            
+            for (const selectId of selects) {
+                const select = document.getElementById(selectId);
+                const isFilter = selectId.includes('filter');
+                
+                select.innerHTML = isFilter ? 
+                    '<option value="">全部位置</option>' : 
+                    '<option value="">选择位置</option>';
+            }
 
-function nullIfEmpty(val) {
-  return val && val.trim() !== '' ? val.trim() : null;
-}
+            try {
+                const list = await fetchJson(`${API_BASE}/locations`);
+                list.forEach(location => {
+                    locationsMap.set(location.id, location.name);
+                    
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        const option = document.createElement('option');
+                        option.value = location.id;
+                        option.textContent = `${location.name} (ID=${location.id})`;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (err) {
+                console.warn('位置加载失败:', err);
+            }
+        }
 
-async function reloadAll() {
-  // 先加载各下拉与名称映射，再加载设备列表，确保表格能显示名称而不是ID
-  await Promise.all([loadCategories(), loadSuppliers(), loadLocations(), loadKeepers()]);
-  await loadEquipment();
-}
+        async function loadKeepers() {
+            const selects = ['keeperId', 'editKeeperId', 'modalKeeperId'];
+            
+            for (const selectId of selects) {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">选择保管人</option>';
+            }
 
-function onFilterChanged() {
-  const catVal = document.getElementById('filterCategoryId').value;
-  filters.categoryId = catVal ? parseNullableInt(catVal) : null;
-  const statusVal = document.getElementById('filterStatus').value;
-  filters.status = statusVal || null;
-  currentPage = 0;
-  loadEquipment();
-}
+            try {
+                const list = await fetchJson(`${API_BASE}/admin/users`);
+                list.forEach(user => {
+                    const name = user.displayName || user.username || `用户${user.id}`;
+                    keepersMap.set(user.id, name);
+                    
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = `${name} (ID=${user.id})`;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (err) {
+                console.warn('保管人加载失败:', err);
+            }
+        }
 
-function onSearch() {
-  const kw = document.getElementById('searchKeyword').value || '';
-  filters.keyword = kw.trim() !== '' ? kw.trim() : null;
-  currentPage = 0;
-  loadEquipment();
-}
+        function initStatusOptions() {
+            const statuses = ['在用', '闲置', '借用中', '维修中', '报废'];
+            const selects = ['status', 'editStatus', 'modalStatus', 'filterStatus'];
+            
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const isFilter = selectId.includes('filter');
+                
+                select.innerHTML = isFilter ? 
+                    '<option value="">全部状态</option>' : 
+                    '';
+                
+                statuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status;
+                    option.textContent = status;
+                    select.appendChild(option);
+                });
+            });
+        }
 
-function onPageSizeChanged() {
-  pageSize = parseNullableInt(document.getElementById('pageSize').value) || 10;
-  currentPage = 0;
-  loadEquipment();
-}
+        // 获取最近操作日志
+        async function fetchLatestOperationLog(entityType, entityId, action) {
+            const key = `${entityType}:${entityId}:${action || ''}`;
+            if (latestOpCache.has(key)) return latestOpCache.get(key);
+            
+            try {
+                const params = new URLSearchParams();
+                params.set('entityType', entityType);
+                params.set('entityId', String(entityId));
+                if (action) params.set('action', action);
+                
+                const log = await fetchJson(`${API_BASE}/operation-logs/latest?` + params.toString());
+                latestOpCache.set(key, log || null);
+                return log || null;
+            } catch (err) {
+                latestOpCache.set(key, null);
+                return null;
+            }
+        }
 
-function nextPage() {
-  if (currentPage + 1 < totalPages) {
-    currentPage += 1;
-    loadEquipment();
-  }
-}
+        const latestOpCache = new Map();
 
-function prevPage() {
-  if (currentPage > 0) {
-    currentPage -= 1;
-    loadEquipment();
-  }
-}
+        // 表单提交
+        async function submitCreate(ev) {
+            ev.preventDefault();
+            
+            const payload = {
+                name: document.getElementById('name').value.trim(),
+                status: document.getElementById('status').value,
+                categoryId: parseNullableInt(document.getElementById('categoryId').value),
+                supplierId: parseNullableInt(document.getElementById('supplierId').value),
+                brand: nullIfEmpty(document.getElementById('brand').value),
+                model: nullIfEmpty(document.getElementById('model').value),
+                quantity: parseNullableInt(document.getElementById('quantity').value) || 1,
+                locationId: parseNullableInt(document.getElementById('locationId').value),
+                keeperId: parseNullableInt(document.getElementById('keeperId').value),
+                purchaseDate: nullIfEmpty(document.getElementById('purchaseDate').value),
+                remarks: nullIfEmpty(document.getElementById('remarks').value)
+            };
 
-async function createInventoryRecord(equipmentId) {
-  if (!equipmentId) { showMsg('无效的设备ID，无法登记盘库', false); return; }
-  const source = prompt('盘库来源（例如：实盘/系统/抽查），可留空');
-  const note = prompt('盘库备注（可选，例如：数量核对，位置确认等）');
-  // 是否调整数量
-  const adjust = confirm('是否需要调整数量？\n选择“确定”表示本次盘库要调整数量');
-  let newQuantity = null;
-  let adjustReason = null;
-  if (adjust) {
-    const newQStr = prompt('请输入调整后的数量（非负整数）');
-    if (newQStr == null) { showMsg('已取消数量调整'); return; }
-    const parsed = parseInt(newQStr, 10);
-    if (isNaN(parsed) || parsed < 0) { showMsg('数量输入无效：请填写非负整数', false); return; }
-    newQuantity = parsed;
-    adjustReason = prompt('请输入数量变更原因（必填）');
-    if (!adjustReason || adjustReason.trim() === '') { showMsg('变更原因为必填项', false); return; }
-  }
-  const payload = {
-    source: source && source.trim() !== '' ? source.trim() : null,
-    note: note && note.trim() !== '' ? note.trim() : null,
-    adjustQuantity: adjust ? true : false,
-    newQuantity: newQuantity,
-    adjustReason: adjustReason && adjustReason.trim() !== '' ? adjustReason.trim() : null
-  };
-  try {
-    const created = await fetchJson(`${API_BASE}/inventory-records/${equipmentId}`, { method: 'POST', body: JSON.stringify(payload) });
-    showMsg(`盘库登记成功：记录ID=${created.id}`);
-    // 刷新最近盘库列表 & 刷新设备表格（以便数量变化立即可见）
-    await loadRecentInventoryRecords(equipmentId);
-    await loadEquipment();
-  } catch (err) {
-    console.error(err);
-    showMsg('盘库登记失败：' + err.message, false);
-  }
-}
+            try {
+                const created = await fetchJson(`${API_BASE}/equipment`, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                setCreateMsg(`设备添加成功，ID=${created.id}`, 'success');
+                document.getElementById('createForm').reset();
+                await loadEquipment();
+                
+            } catch (err) {
+                console.error(err);
+                setCreateMsg(`添加失败：${err.message}`, 'error');
+            }
+        }
 
-// 加载并渲染最近盘库记录（默认 Top 10）
-async function loadRecentInventoryRecords(equipmentId) {
-  const tbody = document.querySelector('#recentInventoryTable tbody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#666;">加载中...</td></tr>';
-  try {
-    const params = new URLSearchParams();
-    params.set('equipmentId', String(equipmentId));
-    params.set('limit', '10');
-    const list = await fetchJson(`${API_BASE}/inventory-records?` + params.toString());
-    await renderRecentInventoryTable(list || []);
-    const el = document.getElementById('recentInvMsg');
-    el.className = 'success';
-    el.textContent = `已加载最近盘库记录 ${list.length} 条`;
-    el.classList.remove('hidden');
-    setTimeout(() => el.classList.add('hidden'), 3000);
-  } catch (err) {
-    console.error(err);
-    const el = document.getElementById('recentInvMsg');
-    el.className = 'error';
-    el.textContent = '加载最近盘库记录失败：' + err.message;
-    el.classList.remove('hidden');
-    setTimeout(() => el.classList.add('hidden'), 5000);
-  }
-}
+        async function submitUpdate(ev) {
+            ev.preventDefault();
+            
+            const id = parseNullableInt(document.getElementById('editId').value);
+            if (!id) {
+                setEditMsg('请先选择要编辑的设备', 'error');
+                return;
+            }
 
-async function renderRecentInventoryTable(records) {
-  const tbody = document.querySelector('#recentInventoryTable tbody');
-  tbody.innerHTML = '';
-  if (!records || records.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#999;">暂无盘库记录</td></tr>';
-    return;
-  }
-  // 并行获取每条记录的创建操作者
-  const actorPromises = records.map(r => fetchLatestOperationLog('InventoryRecord', r.id, 'CREATE'));
-  const logs = await Promise.all(actorPromises);
-  for (let i = 0; i < records.length; i++) {
-    const r = records[i];
-    const log = logs[i];
-    const actor = log && log.actor ? log.actor : '';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.id ?? ''}</td>
-      <td>${r.createdAt ? toDateTimeLocal(r.createdAt) : ''}</td>
-      <td>${r.source ?? ''}</td>
-      <td>${r.note ?? ''}</td>
-      <td>${typeof r.adjustAfterQuantity === 'number' ? r.adjustAfterQuantity : ''}</td>
-      <td>${r.adjustReason ?? ''}</td>
-      <td>${actor}</td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
+            const payload = {
+                name: document.getElementById('editName').value.trim(),
+                status: document.getElementById('editStatus').value,
+                categoryId: parseNullableInt(document.getElementById('editCategoryId').value),
+                supplierId: parseNullableInt(document.getElementById('editSupplierId').value),
+                brand: nullIfEmpty(document.getElementById('editBrand').value),
+                model: nullIfEmpty(document.getElementById('editModel').value),
+                quantity: parseNullableInt(document.getElementById('editQuantity').value),
+                locationId: parseNullableInt(document.getElementById('editLocationId').value),
+                keeperId: parseNullableInt(document.getElementById('editKeeperId').value),
+                purchaseDate: nullIfEmpty(document.getElementById('editPurchaseDate').value),
+                remarks: nullIfEmpty(document.getElementById('editRemarks').value)
+            };
 
-async function invokeEquipment(equipmentId) {
-  if (!equipmentId) { showMsg('无效的设备ID，无法调用', false); return; }
-  
-  // Check if equipment is available for transfer
-  try {
-    const equipment = await fetchJson(`${API_BASE}/equipment/${equipmentId}`);
-    if (equipment.status === '借用中' || equipment.status === '维修中' || equipment.status === '报废') {
-      showMsg(`设备当前状态为"${equipment.status}"，无法调用`, false);
-      return;
-    }
-    
-    // Redirect to transfer creation page with pre-filled equipment
-    window.location.href = `/admin/transfers?equipmentId=${equipmentId}`;
-  } catch (err) {
-    console.error(err);
-    showMsg(`检查设备状态失败：${err.message}`, false);
-  }
-}
+            try {
+                const updated = await fetchJson(`${API_BASE}/equipment/${id}`, { 
+                    method: 'PUT', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                setEditMsg(`设备更新成功，ID=${updated.id}`, 'success');
+                await loadEquipment();
+                
+            } catch (err) {
+                console.error(err);
+                setEditMsg(`更新失败：${err.message}`, 'error');
+            }
+        }
 
-window.addEventListener('DOMContentLoaded', () => {
-  initStatusOptions();
-  reloadAll();
-});
+        // 设备操作
+        async function setEditForm(id) {
+            if (!id) {
+                setEditMsg('请先选择有效的设备', 'error');
+                return;
+            }
+            
+            try {
+                const equipment = await fetchJson(`${API_BASE}/equipment/${id}`);
+                
+                document.getElementById('editId').value = equipment.id || '';
+                document.getElementById('editName').value = equipment.name || '';
+                document.getElementById('editStatus').value = equipment.status || '';
+                document.getElementById('editCategoryId').value = equipment.categoryId || '';
+                document.getElementById('editSupplierId').value = equipment.supplierId || '';
+                document.getElementById('editBrand').value = equipment.brand || '';
+                document.getElementById('editModel').value = equipment.model || '';
+                document.getElementById('editQuantity').value = equipment.quantity || '';
+                document.getElementById('editLocationId').value = equipment.locationId || '';
+                document.getElementById('editKeeperId').value = equipment.keeperId || '';
+                document.getElementById('editPurchaseDate').value = equipment.purchaseDate || '';
+                document.getElementById('editRemarks').value = equipment.remarks || '';
+                
+                setEditMsg('设备数据已加载，可以进行编辑', 'success');
+                
+                // 加载最近盘库记录
+                await loadRecentInventoryRecords(equipment.id);
+                
+                // 滚动到编辑表单
+                document.getElementById('editForm').scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (err) {
+                console.error(err);
+                setEditMsg(`加载设备失败：${err.message}`, 'error');
+            }
+        }
 
-// 导出当前筛选条件下的设备列表为 CSV
-function exportCsv() {
-  try {
-    const params = new URLSearchParams();
-    if (filters.status) params.set('status', filters.status);
-    if (filters.categoryId) params.set('categoryId', String(filters.categoryId));
-    if (filters.keyword) params.set('keyword', filters.keyword);
-    if (filters.supplierId) params.set('supplierId', String(filters.supplierId));
-    if (filters.locationId) params.set('locationId', String(filters.locationId));
-    if (filters.keeperId) params.set('keeperId', String(filters.keeperId));
-    const url = `${API_BASE}/equipment/export?` + params.toString();
-    // 在新窗口打开以触发下载
-    window.open(url, '_blank');
-  } catch (err) {
-    console.error(err);
-    showMsg('导出失败：' + err.message, false);
-  }
-}
-</script>
+        async function deleteEquipment(id) {
+            if (!id) {
+                setEditMsg('缺少设备ID', 'error');
+                return;
+            }
+            
+            if (!confirm('确认删除该设备？此操作不可恢复。')) return;
+            
+            try {
+                const resp = await fetch(`${API_BASE}/equipment/${id}`, { method: 'DELETE' });
+                if (!resp.ok) throw new Error(await resp.text());
+                
+                setEditMsg('设备删除成功', 'success');
+                resetEditForm();
+                await loadEquipment();
+                
+            } catch (err) {
+                console.error(err);
+                setEditMsg(`删除失败：${err.message}`, 'error');
+            }
+        }
 
-<script>
-async function importCsv(){
-  const f = document.getElementById('importFile').files[0];
-  if (!f) return;
-  const fd = new FormData();
-  fd.append('file', f);
-  try {
-    const resp = await fetch('/api/equipment/import', { method:'POST', body: fd });
-    if (!resp.ok) throw new Error(await resp.text());
-    const result = await resp.json();
-    showMsg(`导入完成：成功 ${result.success} / 总计 ${result.total} / 失败 ${result.failed}`);
-    await loadEquipment();
-  } catch(err){
-    showMsg('导入失败：' + err.message, false);
-  } finally {
-    document.getElementById('importFile').value = '';
-  }
-}
-</script>
+        async function confirmDelete() {
+            const id = parseNullableInt(document.getElementById('editId').value);
+            if (!id) {
+                setEditMsg('请先选择要删除的设备', 'error');
+                return;
+            }
+            await deleteEquipment(id);
+        }
 
+        // 盘库功能
+        async function createInventoryRecord(equipmentId) {
+            if (!equipmentId) {
+                showMsg('无效的设备ID，无法登记盘库', 'error');
+                return;
+            }
+            
+            const source = prompt('盘库来源（例如：实盘/系统/抽查），可留空');
+            const note = prompt('盘库备注（可选，例如：数量核对，位置确认等）');
+            const adjust = confirm('是否需要调整数量？\n选择"确定"表示本次盘库要调整数量');
+            
+            let newQuantity = null;
+            let adjustReason = null;
+            
+            if (adjust) {
+                const newQStr = prompt('请输入调整后的数量（非负整数）');
+                if (newQStr == null) {
+                    showMsg('已取消数量调整');
+                    return;
+                }
+                const parsed = parseInt(newQStr, 10);
+                if (isNaN(parsed) || parsed < 0) {
+                    showMsg('数量输入无效：请填写非负整数', 'error');
+                    return;
+                }
+                newQuantity = parsed;
+                adjustReason = prompt('请输入数量变更原因（必填）');
+                if (!adjustReason || adjustReason.trim() === '') {
+                    showMsg('变更原因为必填项', 'error');
+                    return;
+                }
+            }
+            
+            const payload = {
+                source: source && source.trim() !== '' ? source.trim() : null,
+                note: note && note.trim() !== '' ? note.trim() : null,
+                adjustQuantity: adjust ? true : false,
+                newQuantity: newQuantity,
+                adjustReason: adjustReason && adjustReason.trim() !== '' ? adjustReason.trim() : null
+            };
+            
+            try {
+                const created = await fetchJson(`${API_BASE}/inventory-records/${equipmentId}`, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                showMsg(`盘库登记成功：记录ID=${created.id}`, 'success');
+                await loadRecentInventoryRecords(equipmentId);
+                await loadEquipment();
+                
+            } catch (err) {
+                console.error(err);
+                showMsg('盘库登记失败：' + err.message, 'error');
+            }
+        }
+
+        async function loadRecentInventoryRecords(equipmentId) {
+            const tbody = document.querySelector('#recentInventoryTable tbody');
+            const msgEl = document.getElementById('recentInvMsg');
+            
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: var(--space-4);">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        正在加载盘库记录...
+                    </td>
+                </tr>
+            `;
+            
+            try {
+                const params = new URLSearchParams();
+                params.set('equipmentId', String(equipmentId));
+                params.set('limit', '10');
+                
+                const list = await fetchJson(`${API_BASE}/inventory-records?` + params.toString());
+                await renderRecentInventoryTable(list || []);
+                
+                msgEl.textContent = `已加载最近盘库记录 ${list.length} 条`;
+                msgEl.className = 'modern-alert modern-alert-success';
+                msgEl.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    msgEl.classList.add('hidden');
+                }, 3000);
+                
+            } catch (err) {
+                console.error(err);
+                
+                msgEl.textContent = '加载盘库记录失败：' + err.message;
+                msgEl.className = 'modern-alert modern-alert-error';
+                msgEl.classList.remove('hidden');
+                
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: var(--space-4); color: var(--danger-600);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            加载盘库记录失败
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function renderRecentInventoryTable(records) {
+            const tbody = document.querySelector('#recentInventoryTable tbody');
+            
+            if (!records || records.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: var(--space-4); color: var(--gray-500);">
+                            <i class="fas fa-info-circle"></i>
+                            暂无盘库记录
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            // 并行获取每条记录的创建操作者
+            const actorPromises = records.map(r => fetchLatestOperationLog('InventoryRecord', r.id, 'CREATE'));
+            const logs = await Promise.all(actorPromises);
+            
+            for (let i = 0; i < records.length; i++) {
+                const record = records[i];
+                const log = logs[i];
+                const actor = log && log.actor ? log.actor : '-';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span class="modern-badge modern-badge-sm">${record.id}</span></td>
+                    <td><small>${record.createdAt ? new Date(record.createdAt).toLocaleString() : '-'}</small></td>
+                    <td>${record.source || '-'}</td>
+                    <td>${record.note || '-'}</td>
+                    <td>${typeof record.adjustAfterQuantity === 'number' ? record.adjustAfterQuantity : '-'}</td>
+                    <td>${record.adjustReason || '-'}</td>
+                    <td><span class="modern-badge modern-badge-outline">${actor}</span></td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // 设备调用
+        async function invokeEquipment(equipmentId) {
+            if (!equipmentId) {
+                showMsg('无效的设备ID，无法调用', 'error');
+                return;
+            }
+            
+            try {
+                const equipment = await fetchJson(`${API_BASE}/equipment/${equipmentId}`);
+                
+                if (equipment.status === '借用中' || equipment.status === '维修中' || equipment.status === '报废') {
+                    showMsg(`设备当前状态为"${equipment.status}"，无法调用`, 'error');
+                    return;
+                }
+                
+                // 重定向到调用页面
+                window.location.href = `/admin/transfers?equipmentId=${equipmentId}`;
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`检查设备状态失败：${err.message}`, 'error');
+            }
+        }
+
+        // 搜索和筛选
+        function onQuickSearch(event) {
+            if (event.key === 'Enter') {
+                onSearch();
+            }
+        }
+
+        function onSearch() {
+            const keyword = document.getElementById('searchKeyword').value || 
+                           document.getElementById('quickSearch').value || '';
+            filters.keyword = keyword.trim() !== '' ? keyword.trim() : null;
+            currentPage = 0;
+            loadEquipment();
+        }
+
+        function onFilterChanged() {
+            filters.status = document.getElementById('filterStatus').value || null;
+            filters.categoryId = parseNullableInt(document.getElementById('filterCategoryId').value);
+            filters.supplierId = parseNullableInt(document.getElementById('filterSupplierId').value);
+            filters.locationId = parseNullableInt(document.getElementById('filterLocationId').value);
+            currentPage = 0;
+            loadEquipment();
+        }
+
+        function clearFilter() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterCategoryId').value = '';
+            document.getElementById('filterSupplierId').value = '';
+            document.getElementById('filterLocationId').value = '';
+            document.getElementById('searchKeyword').value = '';
+            document.getElementById('quickSearch').value = '';
+            
+            filters.status = null;
+            filters.categoryId = null;
+            filters.supplierId = null;
+            filters.locationId = null;
+            filters.keyword = null;
+            currentPage = 0;
+            
+            loadEquipment();
+        }
+
+        function onPageSizeChanged() {
+            pageSize = parseNullableInt(document.getElementById('pageSize').value) || 10;
+            currentPage = 0;
+            loadEquipment();
+        }
+
+        function nextPage() {
+            if (currentPage + 1 < totalPages) {
+                currentPage += 1;
+                loadEquipment();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage -= 1;
+                loadEquipment();
+            }
+        }
+
+        // 表单重置
+        function resetAddForm() {
+            document.getElementById('createForm').reset();
+            setCreateMsg('表单已重置', 'success');
+        }
+
+        function resetEditForm() {
+            document.getElementById('editForm').reset();
+            document.getElementById('editId').value = '';
+            setEditMsg('表单已重置', 'success');
+        }
+
+        function loadEquipmentForEdit() {
+            const id = prompt('请输入要编辑的设备ID:');
+            if (id) {
+                setEditForm(parseInt(id));
+            }
+        }
+
+        // 模态框功能
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('active');
+            // 若下拉尚未加载，尝试加载
+            const catSel = document.getElementById('modalCategoryId');
+            const supSel = document.getElementById('modalSupplierId');
+            const locSel = document.getElementById('modalLocationId');
+            if (catSel.options.length <= 1) loadCategories();
+            if (supSel.options.length <= 1) loadSuppliers();
+            if (locSel.options.length <= 1) loadLocations();
+        }
+
+        function hideAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('modalCreateForm').reset();
+        }
+
+        // 生成编码
+        function generateCode(prefix) {
+            const ts = Date.now();
+            return `${prefix}-${ts}`;
+        }
+
+        // 快速新建分类
+        async function quickCreateCategory() {
+            const name = prompt('请输入分类名称');
+            if (!name || name.trim() === '') return;
+            const type = prompt('请选择设备类型（教学设备/科研设备/办公设备/生活设备/其他设备）', '其他设备');
+            const allowed = ['教学设备','科研设备','办公设备','生活设备','其他设备'];
+            const finalType = allowed.includes(type) ? type : '其他设备';
+            const payload = {
+                code: generateCode('CAT'),
+                name: name.trim(),
+                type: finalType,
+                level: 0,
+                parentId: null,
+                isActive: true
+            };
+            try {
+                const created = await fetchJson('/api/equipment-categories', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                // 更新下拉并选中新项
+                await loadCategories();
+                const sel = document.getElementById('modalCategoryId');
+                sel.value = String(created.id);
+                showMsg(`已新建分类：${created.name}`, 'success');
+            } catch (err) {
+                showMsg('新建分类失败：' + err.message, 'error');
+            }
+        }
+
+        // 快速新建供应商
+        async function quickCreateSupplier() {
+            const name = prompt('请输入供应商名称');
+            if (!name || name.trim() === '') return;
+            const payload = {
+                code: generateCode('SUP'),
+                name: name.trim(),
+                isActive: true
+            };
+            try {
+                const created = await fetchJson('/api/suppliers', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                await loadSuppliers();
+                const sel = document.getElementById('modalSupplierId');
+                sel.value = String(created.id);
+                showMsg(`已新建供应商：${created.name}`, 'success');
+            } catch (err) {
+                showMsg('新建供应商失败：' + err.message, 'error');
+            }
+        }
+
+        // 快速新建位置
+        async function quickCreateLocation() {
+            const name = prompt('请输入位置名称');
+            if (!name || name.trim() === '') return;
+            const type = prompt('请选择位置类型（教室/办公室/实验室/仓库/其他）', '其他');
+            const allowed = ['教室','办公室','实验室','仓库','其他'];
+            const finalType = allowed.includes(type) ? type : '其他';
+            const payload = {
+                name: name.trim(),
+                type: finalType,
+                parentId: null,
+                level: 0,
+                managerId: null
+            };
+            try {
+                const created = await fetchJson('/api/locations', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                await loadLocations();
+                const sel = document.getElementById('modalLocationId');
+                sel.value = String(created.id);
+                showMsg(`已新建位置：${created.name}`, 'success');
+            } catch (err) {
+                showMsg('新建位置失败：' + err.message, 'error');
+            }
+        }
+
+        async function submitModalCreate(ev) {
+            ev.preventDefault();
+            
+            const payload = {
+                name: document.getElementById('modalName').value.trim(),
+                status: document.getElementById('modalStatus').value,
+                categoryId: parseNullableInt(document.getElementById('modalCategoryId').value),
+                supplierId: parseNullableInt(document.getElementById('modalSupplierId').value),
+                brand: nullIfEmpty(document.getElementById('modalBrand').value),
+                model: nullIfEmpty(document.getElementById('modalModel').value),
+                quantity: parseNullableInt(document.getElementById('modalQuantity').value) || 1,
+                locationId: parseNullableInt(document.getElementById('modalLocationId').value),
+                keeperId: parseNullableInt(document.getElementById('modalKeeperId').value),
+                purchaseDate: nullIfEmpty(document.getElementById('modalPurchaseDate').value),
+                remarks: nullIfEmpty(document.getElementById('modalRemarks').value)
+            };
+
+            try {
+                const created = await fetchJson(`${API_BASE}/equipment`, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                showMsg(`设备添加成功，ID=${created.id}`, 'success');
+                hideAddModal();
+                await loadEquipment();
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`添加失败：${err.message}`, 'error');
+            }
+        }
+
+        // 导入功能
+        async function importCsv() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const resp = await fetch('/api/equipment/import', { 
+                    method: 'POST', 
+                    body: formData 
+                });
+                
+                if (!resp.ok) throw new Error(await resp.text());
+                const result = await resp.json();
+                
+                showMsg(`导入完成：成功 ${result.success} / 总计 ${result.total} / 失败 ${result.failed}`, 'success');
+                await loadEquipment();
+                
+            } catch (err) {
+                console.error(err);
+                showMsg('导入失败：' + err.message, 'error');
+            } finally {
+                document.getElementById('importFile').value = '';
+            }
+        }
+
+        // 导出功能
+        function exportCsv() {
+            try {
+                const params = new URLSearchParams();
+                if (filters.status) params.set('status', filters.status);
+                if (filters.categoryId) params.set('categoryId', String(filters.categoryId));
+                if (filters.keyword) params.set('keyword', filters.keyword);
+                if (filters.supplierId) params.set('supplierId', String(filters.supplierId));
+                if (filters.locationId) params.set('locationId', String(filters.locationId));
+                if (filters.keeperId) params.set('keeperId', String(filters.keeperId));
+                
+                const url = `${API_BASE}/equipment/export?` + params.toString();
+                window.open(url, '_blank');
+                
+            } catch (err) {
+                console.error(err);
+                showMsg('导出失败：' + err.message, 'error');
+            }
+        }
+
+        // 工具函数
+        function parseNullableInt(val) {
+            if (!val || val === '') return null;
+            const n = parseInt(val, 10);
+            return isNaN(n) ? null : n;
+        }
+
+        function nullIfEmpty(val) {
+            return val && val.trim() !== '' ? val.trim() : null;
+        }
+
+        // 重新加载所有数据
+        async function reloadAll() {
+            showMsg('正在重新加载数据...', 'info');
+            
+            try {
+                await Promise.all([
+                    loadCategories(), 
+                    loadSuppliers(), 
+                    loadLocations(), 
+                    loadKeepers()
+                ]);
+                await loadEquipment();
+                showMsg('数据加载完成', 'success');
+                
+            } catch (err) {
+                console.error(err);
+                showMsg('数据加载失败：' + err.message, 'error');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initStatusOptions();
+            reloadAll();
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'n') {
+                    e.preventDefault();
+                    showAddModal();
+                }
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    reloadAll();
+                }
+            });
+        });
+
+        // 点击模态框外部关闭
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideAddModal();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,6 +1,13 @@
 # Java_gdzc 资产管理系统（局域网办公增强版）
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Code Copyright](https://img.shields.io/badge/%C2%A9-2025--FZTBU__xxzx-green.svg)](https://gitee.com/luo-yinhe/fixed-asset-management-system)
+
 本项目基于 Spring Boot 3，聚焦局域网办公场景下的设备/耗材/备件/位置/供应商管理，提供易用的后台管理页与完整的接口文档。近期已增强全局搜索、仪表盘指标、设备 CSV 导入与动态库存 UI。
+
+> 许可证：GNU Affero General Public License v3.0（AGPL-3.0）  
+> 著作权：© 2025 FZTBU_xxzx  
+> 若您修改本程序并对外提供服务，必须同样以 AGPL-3.0 公开完整源码。
 
 ## 主要功能
 - 设备管理：分页查询、组合筛选（状态/分类/供应商/位置/保管人/关键字）、CSV 导出与导入

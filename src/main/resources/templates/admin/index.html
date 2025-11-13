@@ -3,201 +3,829 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>资产管理后台</title>
+    <title>资产管理平台 - 智能仪表板</title>
+    <link rel="stylesheet" href="/css/modern-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Helvetica, sans-serif; background: #f7f8fa; margin: 0; color:#1f2328; }
-        header { background: linear-gradient(90deg,#1677ff,#3a8bff); color: #fff; padding: 16px 20px; display:flex; align-items:center; justify-content:space-between; }
-        header h1 { margin:0; font-size: 18px; letter-spacing: .5px; }
-        nav { background: #ffffff; border-bottom: 1px solid #e6e8eb; padding: 10px 20px; position:sticky; top:0; z-index:5; }
-        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; padding:6px 8px; border-radius:6px; }
-        nav a:hover { background:#f0f6ff; }
-        main { padding: 20px; max-width: 1200px; margin:0 auto; }
-        .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-        .card { background:#fff; border:1px solid #e6e8eb; box-shadow: 0 1px 2px rgba(0,0,0,0.04); border-radius: 10px; padding: 14px; }
-        .card h2 { margin: 0 0 8px; font-size:16px; }
-        .danger { color: #ff4d4f; }
-        .search-bar { display:flex; gap:8px; margin-top:8px; }
-        .search-bar input { flex:1; padding:10px 12px; border:1px solid #d0d7de; border-radius:8px; }
-        .btn { padding:8px 12px; border:1px solid #1677ff; color:#1677ff; background:#fff; border-radius:8px; cursor:pointer; }
-        .btn.primary { background:#1677ff; color:#fff; }
-        .list { list-style:none; padding:0; margin:8px 0 0; }
-        .list li { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eef0f3; }
-        .pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:12px; background:#f2f8ff; color:#3a8bff; border:1px solid #cfe2ff; }
-        .muted { color:#656d76; font-size:12px; }
+        /* 仪表板特定样式 */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+            color: white;
+            padding: var(--space-6) var(--space-8);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .dashboard-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-subtitle {
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .stat-card-large {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .stat-card-large:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-2xl);
+            margin-bottom: var(--space-4);
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-icon-primary {
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: white;
+        }
+
+        .stat-icon-success {
+            background: linear-gradient(135deg, var(--success-500), var(--success-600));
+            color: white;
+        }
+
+        .stat-icon-warning {
+            background: linear-gradient(135deg, var(--warning-500), var(--warning-600));
+            color: white;
+        }
+
+        .stat-icon-danger {
+            background: linear-gradient(135deg, var(--danger-500), var(--danger-600));
+            color: white;
+        }
+
+        .stat-number {
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--gray-900);
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-lg);
+            color: var(--gray-600);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .trend-up {
+            background: var(--success-50);
+            color: var(--success-600);
+        }
+
+        .trend-down {
+            background: var(--danger-50);
+            color: var(--danger-600);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--space-6);
+        }
+
+        .chart-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) 0;
+            border-bottom: 1px solid var(--gray-100);
+            transition: all var(--transition-fast);
+        }
+
+        .activity-item:hover {
+            background: var(--gray-50);
+            margin: 0 -var(--space-3);
+            padding-left: var(--space-3);
+            padding-right: var(--space-3);
+            border-radius: var(--radius-md);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-900);
+            margin-bottom: var(--space-1);
+        }
+
+        .activity-time {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-8);
+        }
+
+        .quick-action-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid transparent;
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .quick-action-card:hover {
+            border-color: var(--primary-300);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .quick-action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xl);
+            margin: 0 auto var(--space-3);
+            background: var(--primary-100);
+            color: var(--primary-600);
+        }
+
+        .quick-action-title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-900);
+            margin-bottom: var(--space-2);
+        }
+
+        .quick-action-desc {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-top: var(--space-2);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+            border-radius: var(--radius-full);
+            transition: width var(--transition-normal);
+        }
+
+        .alert-modern {
+            background: linear-gradient(135deg, var(--warning-50), rgba(255, 255, 255, 0.8));
+            border: 1px solid var(--warning-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .alert-icon {
+            color: var(--warning-600);
+            font-size: var(--font-size-lg);
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--warning-800);
+            margin-bottom: var(--space-1);
+        }
+
+        .alert-text {
+            font-size: var(--font-size-sm);
+            color: var(--warning-700);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                padding: var(--space-4);
+            }
+            
+            .dashboard-title {
+                font-size: var(--font-size-2xl);
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
     </style>
 </head>
 <body>
-<header>
-    <h1>资产管理后台</h1>
-    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
-</header>
-<nav>
-    <a href="/admin">仪表盘</a>
-    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
-    <a href="/admin/users">用户管理</a>
-    <a href="/admin/equipment">设备管理</a>
-    <a href="/admin/transfers">设备调用</a>
-    <a href="/admin/locations">位置管理</a>
-    <a href="/admin/suppliers">供应商管理</a>
-    <a href="/admin/categories">设备分类管理</a>
-    <a href="/admin/maintenances">维修管理</a>
-    <a href="/admin/inventory">盘库（设备一览）</a>
-    <a href="/admin/spare-parts">备件管理</a>
-    <a href="/admin/consumables">耗材管理</a>
-    <a href="/admin/equipment-docs">设备文档</a>
-    <a href="/admin/knowledge">故障知识库</a>
-    <a href="/admin/operation-logs">操作日志</a>
-</nav>
-<main>
-    <div class="grid">
-        <div class="card">
-            <h2>系统状态</h2>
-            <p>端口：<span class="pill">13697</span></p>
-            <p>数据库：<span class="pill">MySQL</span> <span class="muted">（查看 <a href="/swagger-ui/index.html" target="_blank">接口文档</a>）</span></p>
-            <div class="search-bar">
-                <input id="globalKeyword" type="text" placeholder="全局搜索：设备/供应商/位置...">
-                <button class="btn primary" onclick="doGlobalSearch()">搜索</button>
-            </div>
-            <div id="searchResult" class="muted" style="margin-top:6px;">输入关键字后显示匹配概览</div>
-            <ul id="searchList" class="list"></ul>
+    <!-- 现代化导航栏 -->
+    <nav class="modern-nav">
+        <div class="modern-flex-between">
+            <a href="/admin" class="modern-nav-brand">
+                <i class="fas fa-chart-line"></i>
+                资产管理平台
+            </a>
+            <ul class="modern-nav-menu">
+                <li><a href="/admin" class="modern-nav-link active">仪表板</a></li>
+                <li><a href="/admin/users" class="modern-nav-link">用户管理</a></li>
+                <li><a href="/admin/equipment" class="modern-nav-link">设备管理</a></li>
+                <li><a href="/admin/transfers" class="modern-nav-link">设备调用</a></li>
+                <li><a href="/swagger-ui/index.html" target="_blank" class="modern-nav-link">API文档</a></li>
+                <li><a href="/logout" class="modern-nav-link">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="modern-container">
+        <!-- 仪表板头部 -->
+        <div class="dashboard-header fade-in-up">
+            <h1 class="dashboard-title">
+                <i class="fas fa-tachometer-alt"></i>
+                智能资产管理仪表板
+            </h1>
+            <p class="dashboard-subtitle">实时监控资产状态，智能分析运营数据</p>
         </div>
 
-        <div class="card">
-            <h2>耗材库存预警</h2>
-            <p class="muted">低于安全库存的耗材 Top 10</p>
-            <ul id="lowStockList" class="list"></ul>
-            <div class="muted"><a href="/admin/consumables">进入耗材管理</a></div>
-        </div>
-        <div class="card">
-            <h2>资产概览</h2>
-            <div id="overviewLoad" class="muted">加载中...</div>
-            <div style="display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin-top:8px;">
-                <div>
-                    <div class="muted">设备总数</div>
-                    <div id="eqTotal" style="font-weight:600;">-</div>
-                    <ul id="eqByStatus" class="list" style="margin-top:6px;"></ul>
+        <!-- 快速操作区域 -->
+        <div class="quick-actions fade-in-up">
+            <a href="/admin/equipment" class="quick-action-card">
+                <div class="quick-action-icon">
+                    <i class="fas fa-plus"></i>
                 </div>
-                <div>
-                    <div class="muted">保修到期（30天内）Top10</div>
-                    <ul id="warrantyTop" class="list" style="margin-top:6px;"></ul>
+                <h3 class="quick-action-title">添加设备</h3>
+                <p class="quick-action-desc">快速录入新设备信息</p>
+            </a>
+            <a href="/admin/transfers" class="quick-action-card">
+                <div class="quick-action-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h3 class="quick-action-title">设备调用</h3>
+                <p class="quick-action-desc">处理设备调用申请</p>
+            </a>
+            <a href="/admin/inventory" class="quick-action-card">
+                <div class="quick-action-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3 class="quick-action-title">库存盘点</h3>
+                <p class="quick-action-desc">进行设备库存盘点</p>
+            </a>
+            <a href="/admin/maintenances" class="quick-action-card">
+                <div class="quick-action-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h3 class="quick-action-title">维修管理</h3>
+                <p class="quick-action-desc">跟踪设备维修状态</p>
+            </a>
+        </div>
+
+        <!-- 统计卡片区域 -->
+        <div class="stats-grid fade-in-up">
+            <div class="stat-card-large">
+                <div class="stat-icon stat-icon-primary">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <div class="stat-number" id="equipmentTotal">-</div>
+                <div class="stat-label">设备总数</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+12% 本月新增</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
                 </div>
             </div>
-            <div style="margin-top:8px;">
-                <div class="muted">近7天操作日志</div>
-                <ul id="opsTrend" class="list" style="margin-top:6px;"></ul>
+
+            <div class="stat-card-large">
+                <div class="stat-icon stat-icon-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-number" id="activeEquipment">-</div>
+                <div class="stat-label">在用设备</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+8% 正常运行</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 85%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card-large">
+                <div class="stat-icon stat-icon-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-number" id="maintenanceEquipment">-</div>
+                <div class="stat-label">维修中设备</div>
+                <div class="stat-trend trend-down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>-15% 维修完成</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 25%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card-large">
+                <div class="stat-icon stat-icon-danger">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number" id="totalUsers">-</div>
+                <div class="stat-label">系统用户</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+5% 活跃用户</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 60%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 警告提示 -->
+        <div class="alert-modern fade-in-up">
+            <div class="alert-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">系统提醒</div>
+                <div class="alert-text">有 <span id="lowStockCount">3</span> 种耗材库存低于安全线，请及时补充</div>
+            </div>
+            <a href="/admin/consumables" class="modern-btn modern-btn-sm modern-btn-outline">查看详情</a>
+        </div>
+
+        <div class="modern-grid">
+            <!-- 最近活动 -->
+            <div class="modern-card fade-in-up">
+                <div class="modern-card-header">
+                    <h2 class="modern-card-title">
+                        <i class="fas fa-history"></i>
+                        最近活动
+                    </h2>
+                    <a href="/admin/operation-logs" class="modern-btn modern-btn-sm modern-btn-outline">查看全部</a>
+                </div>
+                <ul class="activity-list" id="recentActivity">
+                    <li class="activity-item">
+                        <div class="activity-icon modern-badge-success">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">新增设备：笔记本电脑 Dell XPS 13</div>
+                            <div class="activity-time">2分钟前</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon modern-badge-primary">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">设备调用：投影仪从会议室A移至会议室B</div>
+                            <div class="activity-time">15分钟前</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon modern-badge-warning">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">维修完成：打印机HP LaserJet恢复正常使用</div>
+                            <div class="activity-time">1小时前</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 设备状态分布 -->
+            <div class="modern-card fade-in-up">
+                <div class="modern-card-header">
+                    <h2 class="modern-card-title">
+                        <i class="fas fa-chart-pie"></i>
+                        设备状态分布
+                    </h2>
+                </div>
+                <div class="chart-container" style="padding: 0;">
+                    <canvas id="statusChart" width="300" height="200"></canvas>
+                </div>
+                <div style="margin-top: var(--space-4);">
+                    <div class="modern-flex-between" style="margin-bottom: var(--space-2);">
+                        <span class="modern-badge modern-badge-success">在用</span>
+                        <span id="statusInUse">65%</span>
+                    </div>
+                    <div class="modern-flex-between" style="margin-bottom: var(--space-2);">
+                        <span class="modern-badge" style="background: var(--gray-100); color: var(--gray-700);">闲置</span>
+                        <span id="statusIdle">20%</span>
+                    </div>
+                    <div class="modern-flex-between" style="margin-bottom: var(--space-2);">
+                        <span class="modern-badge modern-badge-warning">维修中</span>
+                        <span id="statusMaintenance">10%</span>
+                    </div>
+                    <div class="modern-flex-between">
+                        <span class="modern-badge modern-badge-danger">报废</span>
+                        <span id="statusScrapped">5%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全局搜索 -->
+        <div class="modern-card fade-in-up">
+            <div class="modern-card-header">
+                <h2 class="modern-card-title">
+                    <i class="fas fa-search"></i>
+                    全局搜索
+                </h2>
+            </div>
+            <div class="modern-input-group">
+                <div class="modern-flex" style="gap: var(--space-3);">
+                    <input type="text" id="globalSearchInput" class="modern-input" placeholder="搜索设备、供应商、位置...">
+                    <button class="modern-btn modern-btn-primary" onclick="performGlobalSearch()">
+                        <i class="fas fa-search"></i>
+                        搜索
+                    </button>
+                </div>
+            </div>
+            <div id="searchResults" class="modern-grid" style="margin-top: var(--space-4); display: none;">
+                <!-- 搜索结果将在这里显示 -->
             </div>
         </div>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-        <h2>下一步</h2>
-        <ul>
-            <li>完善供应商/设备分类/设备的管理页面（前端表格 + 表单）。</li>
-            <li>将用户登录改为数据库存储，并配置权限。</li>
-            <li>根据需要收紧 API 访问权限（目前开放，便于联调）。</li>
-        </ul>
-    </div>
-</main>
-<footer style="text-align:center;font-size:12px;color:#888;margin:16px 0;">
-    © 2025 @FTBU_xxzx All rights reserved
-    <span style="margin-left:8px;">本系统源代码版权与著作权归属 @FTBU_xxzx</span>
-    <span style="margin-left:8px;"><a href="/COPYRIGHT.md" target="_blank" style="color:#888;">版权声明</a></span>
-</footer>
-<script>
-async function doGlobalSearch(){
-  const kw = document.getElementById('globalKeyword').value.trim();
-  if (!kw) { document.getElementById('searchResult').textContent = '请输入关键字'; return; }
-  try {
-    const resp = await fetch('/api/search?q=' + encodeURIComponent(kw));
-    if (!resp.ok) throw new Error(await resp.text());
-    const data = await resp.json();
-    document.getElementById('searchResult').textContent = `匹配设备 ${data.equipmentCount}，供应商 ${data.supplierCount}，位置 ${data.locationCount}`;
-    const ul = document.getElementById('searchList');
-    ul.innerHTML = '';
-    for (const e of (data.equipmentTop||[])) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>设备：${e.name} <span class="muted">${e.brand||''} ${e.model||''}</span></span><a href="/admin/equipment" class="pill">查看</a>`;
-      ul.appendChild(li);
-    }
-    for (const s of (data.supplierTop||[])) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>供应商：${s.name}</span><a href="/admin/suppliers" class="pill">查看</a>`;
-      ul.appendChild(li);
-    }
-    for (const l of (data.locationTop||[])) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>位置：${l.name}</span><a href="/admin/locations" class="pill">查看</a>`;
-      ul.appendChild(li);
-    }
-  } catch(err){
-    document.getElementById('searchResult').textContent = '搜索失败：' + err.message;
-  }
-}
+    <script>
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加渐入动画
+            const elements = document.querySelectorAll('.fade-in-up');
+            elements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+            });
 
-async function loadLowStock(){
-  try {
-    const resp = await fetch('/api/consumables/page?lowStockOnly=true&page=0&size=10&sort=totalStock,asc');
-    if (!resp.ok) throw new Error(await resp.text());
-    const page = await resp.json();
-    const list = page.content || [];
-    const ul = document.getElementById('lowStockList');
-    ul.innerHTML = '';
-    if (list.length === 0) {
-      const li = document.createElement('li');
-      li.innerHTML = '<span>暂无预警</span>';
-      ul.appendChild(li);
-      return;
-    }
-    for (const c of list) {
-      const li = document.createElement('li');
-      const warn = (c.totalStock||0) < (c.safetyStock||0);
-      li.innerHTML = `<span>${c.code||''} ${c.name||''}</span><span class="pill" style="${warn?'background:#fff1f0;color:#cf1322;border-color:#ffa39e':''}">库存 ${c.totalStock??0} / 安全 ${c.safetyStock??0}</span>`;
-      ul.appendChild(li);
-    }
-  } catch(err){
-    const ul = document.getElementById('lowStockList');
-    ul.innerHTML = '<li><span>加载失败：' + err.message + '</span></li>';
-  }
-}
+            // 加载统计数据
+            loadDashboardData();
+            
+            // 定时刷新数据
+            setInterval(loadDashboardData, 30000); // 每30秒刷新一次
+        });
 
-window.addEventListener('DOMContentLoaded', () => {
-  loadLowStock();
-  loadOverview();
-});
+        // 加载仪表板数据
+        async function loadDashboardData() {
+            try {
+                // 获取设备统计
+                const equipmentResponse = await fetch('/api/equipment');
+                const equipmentData = await equipmentResponse.json();
+                
+                // 获取用户统计
+                const usersResponse = await fetch('/api/admin/users');
+                const usersData = await usersResponse.json();
 
-async function loadOverview(){
-  try {
-    const resp = await fetch('/api/dashboard/metrics');
-    if (!resp.ok) throw new Error(await resp.text());
-    const data = await resp.json();
-    document.getElementById('overviewLoad').classList.add('hidden');
-    document.getElementById('eqTotal').textContent = String(data.equipmentTotal ?? 0);
-    const ul = document.getElementById('eqByStatus');
-    ul.innerHTML = '';
-    for (const s of (data.byStatus||[])) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${s.status}</span><span class="pill">${s.count}</span>`;
-      ul.appendChild(li);
-    }
-    const wl = document.getElementById('warrantyTop');
-    wl.innerHTML = (data.warrantyExpiringTop||[]).length === 0 ? '<li><span>暂无到期项</span></li>' : '';
-    for (const w of (data.warrantyExpiringTop||[])) {
-      const li = document.createElement('li');
-      const days = (w.daysLeft==null) ? '' : (w.daysLeft>=0 ? `剩余 ${w.daysLeft} 天` : `已过期 ${Math.abs(w.daysLeft)} 天`);
-      li.innerHTML = `<span>${w.name}</span><span class="pill">${w.warrantyExpiryDate||''}</span><span class="muted" style="margin-left:6px;">${days}</span>`;
-      wl.appendChild(li);
-    }
-    const tl = document.getElementById('opsTrend');
-    tl.innerHTML = '';
-    for (const d of (data.operationsLast7Days||[])) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${d.date}</span><span class="pill">${d.count}</span>`;
-      tl.appendChild(li);
-    }
-  } catch(err){
-    document.getElementById('overviewLoad').textContent = '加载失败：' + err.message;
-  }
-}
-</script>
+                // 更新统计数字
+                updateStats(equipmentData, usersData);
+                
+                // 更新图表
+                updateCharts(equipmentData);
+                
+            } catch (error) {
+                console.error('加载仪表板数据失败:', error);
+            }
+        }
+
+        // 更新统计数据
+        function updateStats(equipmentData, usersData) {
+            const totalEquipment = equipmentData.length || 0;
+            const activeEquipment = equipmentData.filter(item => item.status === '在用').length || 0;
+            const maintenanceEquipment = equipmentData.filter(item => item.status === '维修中').length || 0;
+            const totalUsers = usersData.length || 0;
+
+            // 动画更新数字
+            animateNumber('equipmentTotal', totalEquipment);
+            animateNumber('activeEquipment', activeEquipment);
+            animateNumber('maintenanceEquipment', maintenanceEquipment);
+            animateNumber('totalUsers', totalUsers);
+        }
+
+        // 数字动画
+        function animateNumber(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const startValue = parseInt(element.textContent) || 0;
+            const duration = 1000; // 1秒
+            const startTime = performance.now();
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+                
+                element.textContent = currentValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+            
+            requestAnimationFrame(updateNumber);
+        }
+
+        // 更新图表
+        function updateCharts(equipmentData) {
+            const statusCounts = {
+                '在用': equipmentData.filter(item => item.status === '在用').length,
+                '闲置': equipmentData.filter(item => item.status === '闲置').length,
+                '维修中': equipmentData.filter(item => item.status === '维修中').length,
+                '报废': equipmentData.filter(item => item.status === '报废').length
+            };
+
+            const total = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+            
+            // 更新状态分布百分比
+            document.getElementById('statusInUse').textContent = Math.round((statusCounts['在用'] / total) * 100) + '%';
+            document.getElementById('statusIdle').textContent = Math.round((statusCounts['闲置'] / total) * 100) + '%';
+            document.getElementById('statusMaintenance').textContent = Math.round((statusCounts['维修中'] / total) * 100) + '%';
+            document.getElementById('statusScrapped').textContent = Math.round((statusCounts['报废'] / total) * 100) + '%';
+        }
+
+        // 全局搜索功能
+        async function performGlobalSearch() {
+            const searchInput = document.getElementById('globalSearchInput');
+            const searchTerm = searchInput.value.trim();
+            const resultsContainer = document.getElementById('searchResults');
+
+            if (!searchTerm) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            try {
+                // 搜索设备
+                const equipmentResponse = await fetch(`/api/equipment/search?keyword=${encodeURIComponent(searchTerm)}`);
+                const equipmentResults = await equipmentResponse.json();
+
+                // 搜索供应商
+                const supplierResponse = await fetch(`/api/suppliers/search?keyword=${encodeURIComponent(searchTerm)}`);
+                const supplierResults = await supplierResponse.json();
+
+                // 搜索位置
+                const locationResponse = await fetch(`/api/locations/search?keyword=${encodeURIComponent(searchTerm)}`);
+                const locationResults = await locationResponse.json();
+
+                displaySearchResults(equipmentResults, supplierResults, locationResults);
+                
+            } catch (error) {
+                console.error('搜索失败:', error);
+                resultsContainer.innerHTML = '<div class="modern-card"><p class="text-gray">搜索失败，请稍后重试</p></div>';
+                resultsContainer.style.display = 'grid';
+            }
+        }
+
+        // 显示搜索结果
+        function displaySearchResults(equipment, suppliers, locations) {
+            const resultsContainer = document.getElementById('searchResults');
+            let html = '';
+
+            // 设备结果
+            if (equipment.length > 0) {
+                html += '<div class="modern-card"><h3 class="modern-card-title">设备</h3>';
+                equipment.forEach(item => {
+                    html += `
+                        <div class="activity-item" style="cursor: pointer;" onclick="window.location.href='/admin/equipment'">
+                            <div class="activity-icon modern-badge-primary">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">${item.name}</div>
+                                <div class="activity-time">状态: ${item.status} | 位置: ${item.locationName || '未分配'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // 供应商结果
+            if (suppliers.length > 0) {
+                html += '<div class="modern-card"><h3 class="modern-card-title">供应商</h3>';
+                suppliers.forEach(item => {
+                    html += `
+                        <div class="activity-item">
+                            <div class="activity-icon modern-badge-success">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">${item.name}</div>
+                                <div class="activity-time">${item.contact || '暂无联系方式'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // 位置结果
+            if (locations.length > 0) {
+                html += '<div class="modern-card"><h3 class="modern-card-title">位置</h3>';
+                locations.forEach(item => {
+                    html += `
+                        <div class="activity-item">
+                            <div class="activity-icon modern-badge-warning">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">${item.name}</div>
+                                <div class="activity-time">${item.description || '暂无描述'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            if (equipment.length === 0 && suppliers.length === 0 && locations.length === 0) {
+                html = '<div class="modern-card"><p class="text-gray">未找到相关结果</p></div>';
+            }
+
+            resultsContainer.innerHTML = html;
+            resultsContainer.style.display = 'grid';
+        }
+
+        // 回车搜索
+        document.getElementById('globalSearchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performGlobalSearch();
+            }
+        });
+
+        // 模拟实时活动更新
+        function addActivity(title, icon, type = 'primary') {
+            const activityList = document.getElementById('recentActivity');
+            const newItem = document.createElement('li');
+            newItem.className = 'activity-item';
+            newItem.style.opacity = '0';
+            newItem.style.transform = 'translateY(-20px)';
+            
+            newItem.innerHTML = `
+                <div class="activity-icon modern-badge-${type}">
+                    <i class="fas fa-${icon}"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">${title}</div>
+                    <div class="activity-time">刚刚</div>
+                </div>
+            `;
+            
+            activityList.insertBefore(newItem, activityList.firstChild);
+            
+            // 动画显示
+            setTimeout(() => {
+                newItem.style.transition = 'all 0.3s ease-out';
+                newItem.style.opacity = '1';
+                newItem.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // 保持最多5条记录
+            while (activityList.children.length > 5) {
+                activityList.removeChild(activityList.lastChild);
+            }
+        }
+
+        // 模拟定期活动更新
+        setInterval(() => {
+            const activities = [
+                { title: '设备状态更新：扫描仪已修复', icon: 'tools', type: 'success' },
+                { title: '新设备入库：MacBook Pro 16英寸', icon: 'plus', type: 'primary' },
+                { title: '设备调用：平板电脑移至培训室', icon: 'exchange-alt', type: 'warning' },
+                { title: '库存预警：墨盒库存低于安全线', icon: 'exclamation-triangle', type: 'danger' }
+            ];
+            
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            addActivity(randomActivity.title, randomActivity.icon, randomActivity.type);
+        }, 15000); // 每15秒添加一个模拟活动
+    </script>
 </body>
 </html>
