@@ -10268,3 +10268,12 @@ org.springframework.http.converter.HttpMessageNotWritableException: No converter
 2025-11-13 10:25:19.631 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - keepalive: connection com.mysql.cj.jdbc.ConnectionImpl@7a292c5 is alive
 2025-11-13 10:25:25.569 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - keepalive: connection com.mysql.cj.jdbc.ConnectionImpl@603ce4ab is alive
 2025-11-13 10:25:29.278 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - keepalive: connection com.mysql.cj.jdbc.ConnectionImpl@71a1c735 is alive
+2025-11-13 10:25:37.687 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - keepalive: connection com.mysql.cj.jdbc.ConnectionImpl@674fac1d is alive
+2025-11-13 10:25:39.909 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - keepalive: connection com.mysql.cj.jdbc.ConnectionImpl@5b09299c is alive
+2025-11-13 10:25:40.443 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Pool stats (total=10/10, idle=10/10, active=0, waiting=0)
+2025-11-13 10:25:40.443 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Fill pool skipped, pool has sufficient level or currently being filled.
+2025-11-13 10:25:44.074 DEBUG [HikariPool-1:connection-closer] com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@5b09299c: (connection has passed maxLifetime)
+2025-11-13 10:25:44.076 DEBUG [HikariPool-1:connection-adder] com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Attempting to create/setup new connection (cc778616-18cb-4235-a492-c7858f52bf10)
+2025-11-13 10:25:44.079 DEBUG [HikariPool-1:connection-adder] com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Established new connection (cc778616-18cb-4235-a492-c7858f52bf10)
+2025-11-13 10:25:44.080 DEBUG [HikariPool-1:connection-adder] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@289b64ef
+2025-11-13 10:25:52.616 DEBUG [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - keepalive: connection com.mysql.cj.jdbc.ConnectionImpl@1a3423a7 is alive
