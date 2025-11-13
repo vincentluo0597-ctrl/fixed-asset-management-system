@@ -1,248 +1,1016 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <title>用户管理</title>
-    <link rel="stylesheet" href="/static/css/admin.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - 智能资产管理系统</title>
+    <link rel="stylesheet" href="/css/modern-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 页面特定补充样式 */
-        .roles-inline { display:flex; gap:10px; flex-wrap:wrap; }
-        .card-title { display:flex; align-items:center; justify-content:space-between; }
-        .container { padding: 16px; }
+        /* 用户管理特定样式 */
+        .users-header {
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+            color: white;
+            padding: var(--space-6) var(--space-8);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .users-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .users-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .users-subtitle {
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--gray-900);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            margin-top: var(--space-1);
+        }
+
+        .create-user-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            margin-bottom: var(--space-6);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .form-group label {
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-700);
+            font-size: var(--font-size-sm);
+        }
+
+        .form-group label.required::after {
+            content: ' *';
+            color: var(--danger-500);
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--space-3);
+            padding: var(--space-3);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-200);
+        }
+
+        .role-checkbox {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2);
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .role-checkbox:hover {
+            border-color: var(--primary-300);
+            background: var(--primary-50);
+        }
+
+        .role-checkbox input[type="checkbox"] {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        .role-admin {
+            border-left: 3px solid var(--danger-500);
+        }
+
+        .role-maintainer {
+            border-left: 3px solid var(--warning-500);
+        }
+
+        .role-viewer {
+            border-left: 3px solid var(--success-500);
+        }
+
+        .users-table-container {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+
+        .users-table th {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            font-weight: var(--font-weight-semibold);
+            text-align: left;
+            padding: var(--space-4);
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .users-table td {
+            padding: var(--space-4);
+            border-bottom: 1px solid var(--gray-100);
+            vertical-align: middle;
+        }
+
+        .users-table tbody tr {
+            transition: all var(--transition-fast);
+        }
+
+        .users-table tbody tr:hover {
+            background: var(--gray-50);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: var(--space-1);
+            margin-bottom: var(--space-1);
+        }
+
+        .role-badge-admin {
+            background: var(--danger-50);
+            color: var(--danger-700);
+            border: 1px solid var(--danger-200);
+        }
+
+        .role-badge-maintainer {
+            background: var(--warning-50);
+            color: var(--warning-700);
+            border: 1px solid var(--warning-200);
+        }
+
+        .role-badge-viewer {
+            background: var(--success-50);
+            color: var(--success-700);
+            border: 1px solid var(--success-200);
+        }
+
+        .action-buttons-cell {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .btn-icon-sm {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-md);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-icon-primary {
+            background: var(--primary-100);
+            color: var(--primary-600);
+        }
+
+        .btn-icon-primary:hover {
+            background: var(--primary-200);
+            transform: scale(1.1);
+        }
+
+        .btn-icon-danger {
+            background: var(--danger-100);
+            color: var(--danger-600);
+        }
+
+        .btn-icon-danger:hover {
+            background: var(--danger-200);
+            transform: scale(1.1);
+        }
+
+        .edit-form-row {
+            background: var(--primary-50);
+            border: 2px solid var(--primary-200);
+            border-radius: var(--radius-lg);
+        }
+
+        .edit-form-row td {
+            padding: var(--space-6);
+        }
+
+        .edit-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            .user-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .users-table {
+                font-size: var(--font-size-xs);
+            }
+            
+            .users-table th,
+            .users-table td {
+                padding: var(--space-2) var(--space-3);
+            }
+            
+            .action-buttons-cell {
+                flex-direction: column;
+            }
+            
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .user-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
     </style>
 </head>
 <body>
-<div class="admin-container">
-    <div class="card">
-        <div class="card-title">
-            <h2 class="section-title">用户管理</h2>
-            <div>
-                <span id="status" class="success"></span>
-                <span id="error" class="error"></span>
+    <!-- 现代化导航栏 -->
+    <nav class="modern-nav">
+        <div class="modern-flex-between">
+            <a href="/admin" class="modern-nav-brand">
+                <i class="fas fa-desktop"></i>
+                资产管理系统
+            </a>
+            <ul class="modern-nav-menu">
+                <li><a href="/admin" class="modern-nav-link">仪表板</a></li>
+                <li><a href="/admin/users" class="modern-nav-link active">用户管理</a></li>
+                <li><a href="/admin/equipment" class="modern-nav-link">设备管理</a></li>
+                <li><a href="/admin/transfers" class="modern-nav-link">设备调用</a></li>
+                <li><a href="/admin/locations" class="modern-nav-link">位置管理</a></li>
+                <li><a href="/admin/categories" class="modern-nav-link">分类管理</a></li>
+                <li><a href="/admin/suppliers" class="modern-nav-link">供应商管理</a></li>
+                <li><a href="/logout" class="modern-nav-link">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="modern-container">
+        <!-- 页面头部 -->
+        <div class="users-header fade-in">
+            <h1 class="users-title">
+                <i class="fas fa-users"></i>
+                用户管理
+            </h1>
+            <p class="users-subtitle">管理系统用户，分配角色权限，保障系统安全</p>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="user-stats fade-in">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--primary-100); color: var(--primary-600);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">用户总数</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--danger-100); color: var(--danger-600);">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="adminUsers">-</div>
+                    <div class="stat-label">管理员用户</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--warning-100); color: var(--warning-600);">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="maintainerUsers">-</div>
+                    <div class="stat-label">维护人员</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--success-100); color: var(--success-600);">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="viewerUsers">-</div>
+                    <div class="stat-label">普通用户</div>
+                </div>
             </div>
         </div>
 
-        <div class="toolbar">
-            <button class="btn btn-primary" onclick="reloadPage(0)"><span class="icon"><svg viewBox="0 0 24 24"><path d="M12 5v2a5 5 0 1 1-4.9 6h-2A7 7 0 1 0 12 5zm7 1h-6v2h3.59L13 11.59l1.41 1.41L18 9.41V13h2z"></path></svg></span>刷新</button>
-            <span class="muted">每页</span>
-            <select id="pageSize" onchange="reloadPage(0)">
-                <option value="10">10</option>
-                <option value="20" selected>20</option>
-                <option value="50">50</option>
-            </select>
-            <label class="muted" style="margin-left:12px"><input type="checkbox" id="stripedToggle" checked onchange="toggleTableClass()" /> 斑马条纹</label>
-            <label class="muted"><input type="checkbox" id="compactToggle" onchange="toggleTableClass()" /> 紧凑模式</label>
-            <div class="spacer"></div>
+        <!-- 操作栏 -->
+        <div class="action-bar fade-in">
+            <div class="action-buttons">
+                <button class="modern-btn modern-btn-primary" onclick="reloadPage(0)">
+                    <i class="fas fa-sync-alt"></i>
+                    刷新数据
+                </button>
+                <button class="modern-btn modern-btn-outline" onclick="exportUsers()">
+                    <i class="fas fa-download"></i>
+                    导出用户
+                </button>
+            </div>
+            <div class="modern-input-group" style="max-width: 300px;">
+                <input type="text" id="quickSearch" class="modern-input" placeholder="搜索用户名或显示名..." onkeyup="onQuickSearch(event)">
+                <button class="modern-btn modern-btn-primary" onclick="onSearch()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
         </div>
 
-        <div id="createPanel" class="card" style="margin-bottom:12px">
-            <h3 class="section-title">创建用户</h3>
-            <div class="grid-3">
-                <div class="form-item">
-                    <label class="muted">用户名</label>
-                    <input id="c_username" type="text" placeholder="用户名" />
+        <!-- 消息提示 -->
+        <div id="msg" class="modern-alert hidden"></div>
+
+        <!-- 创建用户表单 -->
+        <div class="create-user-card fade-in">
+            <div class="modern-card-header">
+                <h3><i class="fas fa-user-plus"></i> 创建新用户</h3>
+                <button type="button" class="modern-btn modern-btn-sm modern-btn-outline" onclick="resetCreateForm()">
+                    <i class="fas fa-undo"></i>
+                    重置
+                </button>
+            </div>
+            <form id="createForm" onsubmit="return submitCreate(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="required">用户名</label>
+                        <input type="text" id="c_username" class="modern-input" required placeholder="请输入用户名">
+                    </div>
+                    <div class="form-group">
+                        <label>显示名称</label>
+                        <input type="text" id="c_displayName" class="modern-input" placeholder="可选，用于显示">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">密码</label>
+                        <input type="password" id="c_password" class="modern-input" required placeholder="请输入密码">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="required">用户角色</label>
+                        <div class="roles-grid">
+                            <label class="role-checkbox role-admin">
+                                <input type="checkbox" name="c_roles" value="ADMIN">
+                                <span><i class="fas fa-user-shield"></i> 管理员</span>
+                            </label>
+                            <label class="role-checkbox role-maintainer">
+                                <input type="checkbox" name="c_roles" value="MAINTAINER">
+                                <span><i class="fas fa-user-cog"></i> 维护人员</span>
+                            </label>
+                            <label class="role-checkbox role-viewer">
+                                <input type="checkbox" name="c_roles" value="VIEWER">
+                                <span><i class="fas fa-user"></i> 普通用户</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-item">
-                    <label class="muted">显示名称</label>
-                    <input id="c_displayName" type="text" placeholder="显示名称（可选）" />
+                <div class="modern-flex" style="gap: var(--space-3); margin-top: var(--space-4);">
+                    <button type="submit" class="modern-btn modern-btn-success">
+                        <i class="fas fa-save"></i>
+                        创建用户
+                    </button>
+                    <button type="reset" class="modern-btn modern-btn-secondary">
+                        <i class="fas fa-undo"></i>
+                        重置表单
+                    </button>
                 </div>
-                <div class="form-item">
-                    <label class="muted">密码</label>
-                    <input id="c_password" type="password" placeholder="密码" />
-                </div>
-                <div class="form-item" style="grid-column: 1 / span 3">
-                    <label class="muted">角色</label>
-                    <div class="roles-inline">
-                        <label class="badge role-admin"><input type="checkbox" name="c_roles" value="ADMIN" /> ADMIN</label>
-                        <label class="badge role-maintainer"><input type="checkbox" name="c_roles" value="MAINTAINER" /> MAINTAINER</label>
-                        <label class="badge role-viewer"><input type="checkbox" name="c_roles" value="VIEWER" /> VIEWER</label>
+            </form>
+            <div id="createMsg" class="modern-alert hidden"></div>
+        </div>
+
+        <!-- 用户列表 -->
+        <div class="users-table-container fade-in">
+            <div class="modern-card-header">
+                <h3><i class="fas fa-list"></i> 用户列表</h3>
+                <div class="modern-flex" style="gap: var(--space-2);">
+                    <div class="modern-input-group" style="margin: 0;">
+                        <label style="margin: 0; white-space: nowrap;">每页显示</label>
+                        <select id="pageSize" class="modern-select" onchange="reloadPage(0)" style="min-width: 80px;">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                        </select>
                     </div>
                 </div>
             </div>
-            <div class="actions">
-                <button class="btn btn-success" onclick="createUser()">创建</button>
-                <button class="btn btn-secondary" onclick="resetCreateForm()">清空</button>
-            </div>
+            <table id="userTable" class="users-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>用户名</th>
+                        <th>显示名称</th>
+                        <th>角色</th>
+                        <th style="width: 180px;">创建时间</th>
+                        <th style="width: 200px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="userTbody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                            <i class="fas fa-spinner fa-spin" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-4);"></i>
+                            <div>正在加载用户数据...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <h3 class="section-title" style="margin-top:8px">用户列表</h3>
-        <table id="userTable" class="table-striped">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>用户名</th>
-                <th>显示名称</th>
-                <th>角色</th>
-                <th>创建时间</th>
-                <th>操作</th>
-            </tr>
-            </thead>
-            <tbody id="userTbody"></tbody>
-        </table>
-        <div class="toolbar page-controls" style="justify-content:flex-end">
-            <button id="prevBtn" class="btn btn-secondary" onclick="prevPage()">上一页</button>
-            <span id="pageInfo" class="page-info"></span>
-            <button id="nextBtn" class="btn btn-secondary" onclick="nextPage()">下一页</button>
+        <!-- 分页 -->
+        <div class="modern-pagination" id="paginationContainer">
+            <div class="pagination-info">
+                <span id="pageInfo">第 1/1 页，共 0 条</span>
+            </div>
+            <div class="pagination-controls">
+                <button id="prevBtn" class="modern-btn modern-btn-sm" onclick="prevPage()">
+                    <i class="fas fa-chevron-left"></i>
+                    上一页
+                </button>
+                <button id="nextBtn" class="modern-btn modern-btn-sm" onclick="nextPage()">
+                    下一页
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-let currentPage = 0;
-let totalPages = 0;
+    <script>
+        const API_BASE = '/api';
+        
+        let currentPage = 0;
+        let pageSize = 20;
+        let totalPages = 0;
+        let totalElements = 0;
+        let searchKeyword = '';
 
-function setMsg(ok, msg) {
-    const s = document.getElementById('status');
-    const e = document.getElementById('error');
-    s.textContent = ok ? msg : '';
-    e.textContent = ok ? '' : msg;
-}
+        // 显示消息
+        function showMsg(text, type = 'success') {
+            const msgEl = document.getElementById('msg');
+            msgEl.textContent = text;
+            msgEl.className = `modern-alert modern-alert-${type}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 4000);
+        }
 
-async function reloadPage(page) {
-    try {
-        const size = parseInt(document.getElementById('pageSize').value, 10) || 20;
-        const resp = await fetch(`/api/admin/users/page?page=${page}&size=${size}`);
-        if (!resp.ok) throw new Error(`加载失败: ${resp.status}`);
-        const data = await resp.json();
-        renderTable(data.content);
-        currentPage = data.number;
-        totalPages = data.totalPages;
-        document.getElementById('pageInfo').textContent = `第 ${currentPage + 1} / ${totalPages} 页，总计 ${data.totalElements} 条`;
-        document.getElementById('prevBtn').disabled = currentPage <= 0;
-        document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
-        setMsg(true, '加载成功');
-    } catch (err) {
-        console.error(err);
-        setMsg(false, err.message || '请求失败');
-    }
-}
+        function setCreateMsg(text, type = 'success') {
+            const msgEl = document.getElementById('createMsg');
+            msgEl.textContent = text;
+            msgEl.className = `modern-alert modern-alert-${type}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 5000);
+        }
 
-function prevPage() { if (currentPage > 0) reloadPage(currentPage - 1); }
-function nextPage() { if (currentPage < totalPages - 1) reloadPage(currentPage + 1); }
+        // API请求
+        async function fetchJson(url, options = {}) {
+            const resp = await fetch(url, { 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }, 
+                ...options 
+            });
+            if (!resp.ok) {
+                const txt = await resp.text();
+                throw new Error(`HTTP ${resp.status}: ${txt}`);
+            }
+            return resp.json();
+        }
 
-function roleBadges(roles) {
-    if (!roles || roles.length === 0) return '';
-    return roles.map(r => {
-        let cls = 'role-default';
-        if (r === 'ADMIN') cls = 'role-admin';
-        else if (r === 'MAINTAINER') cls = 'role-maintainer';
-        else if (r === 'VIEWER') cls = 'role-viewer';
-        return `<span class="badge ${cls}">${r}</span>`;
-    }).join('');
-}
+        // 角色徽章样式
+        function getRoleBadge(role) {
+            const badges = {
+                'ADMIN': '<span class="role-badge role-badge-admin"><i class="fas fa-user-shield"></i> 管理员</span>',
+                'MAINTAINER': '<span class="role-badge role-badge-maintainer"><i class="fas fa-user-cog"></i> 维护人员</span>',
+                'VIEWER': '<span class="role-badge role-badge-viewer"><i class="fas fa-user"></i> 普通用户</span>'
+            };
+            return badges[role] || `<span class="role-badge">${role}</span>`;
+        }
 
-function toggleTableClass() {
-    const table = document.getElementById('userTable');
-    table.classList.toggle('table-striped', document.getElementById('stripedToggle').checked);
-    table.classList.toggle('table-compact', document.getElementById('compactToggle').checked);
-}
+        // 渲染用户表格
+        function renderUserTable(users) {
+            const tbody = document.getElementById('userTbody');
+            
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                            <i class="fas fa-users" style="font-size: var(--font-size-3xl); margin-bottom: var(--space-4);"></i>
+                            <div>暂无用户数据</div>
+                            <div style="font-size: var(--font-size-sm); margin-top: var(--space-2);">点击上方"创建用户"按钮添加第一个用户</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
 
-function renderTable(rows) {
-    const tbody = document.getElementById('userTbody');
-    tbody.innerHTML = '';
-    (rows || []).forEach(u => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${u.id}</td>
-            <td>${escapeHtml(u.username)}</td>
-            <td>${escapeHtml(u.displayName || '')}</td>
-            <td>${roleBadges(u.roles || [])}</td>
-            <td>${u.createdAt || ''}</td>
-            <td class="actions">
-                <button class="btn btn-secondary" onclick="openEdit(${u.id}, '${encodeURIComponent(u.displayName || '')}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm18.71-11.04a1 1 0 0 0 0-1.41l-2.51-2.51a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.99-1.66z"></path></svg></span>编辑</button>
-                <button class="btn btn-danger" onclick="deleteUser(${u.id})"><span class="icon"><svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm7-3h-2l-1 1H7v2h10V5h-3l-1-1z"></path></svg></span>删除</button>
-            </td>`;
-        tbody.appendChild(tr);
-    });
-}
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                const rolesHtml = user.roles && user.roles.length > 0 
+                    ? user.roles.map(role => getRoleBadge(role)).join('') 
+                    : '<span class="modern-badge modern-badge-outline">无角色</span>';
+                
+                tr.innerHTML = `
+                    <td><span class="modern-badge modern-badge-primary">${user.id}</span></td>
+                    <td><strong>${escapeHtml(user.username)}</strong></td>
+                    <td>${escapeHtml(user.displayName || '-')}</td>
+                    <td>${rolesHtml}</td>
+                    <td><small>${user.createdAt ? new Date(user.createdAt).toLocaleString() : '-'}</small></td>
+                    <td>
+                        <div class="action-buttons-cell">
+                            <button class="btn-icon-sm btn-icon-primary" onclick="openEditForm(${user.id}, '${encodeURIComponent(user.displayName || '')}')" title="编辑用户">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon-sm btn-icon-danger" onclick="deleteUser(${user.id})" title="删除用户">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-function escapeHtml(str) { return String(str).replace(/[&<>\"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[s])); }
-function getCheckedRoles(name) { return Array.from(document.querySelectorAll(`input[name='${name}']:checked`)).map(i => i.value); }
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const users = await fetchJson(`${API_BASE}/admin/users`);
+                const total = users.length;
+                const admin = users.filter(u => u.roles && u.roles.includes('ADMIN')).length;
+                const maintainer = users.filter(u => u.roles && u.roles.includes('MAINTAINER')).length;
+                const viewer = users.filter(u => u.roles && u.roles.includes('VIEWER')).length;
 
-function resetCreateForm() {
-    document.getElementById('c_username').value = '';
-    document.getElementById('c_displayName').value = '';
-    document.getElementById('c_password').value = '';
-    document.querySelectorAll("input[name='c_roles']").forEach(i => i.checked = false);
-}
+                // 动画更新数字
+                animateNumber('totalUsers', total);
+                animateNumber('adminUsers', admin);
+                animateNumber('maintainerUsers', maintainer);
+                animateNumber('viewerUsers', viewer);
 
-async function createUser() {
-    try {
-        const username = document.getElementById('c_username').value.trim();
-        const displayName = document.getElementById('c_displayName').value.trim();
-        const password = document.getElementById('c_password').value;
-        const roles = getCheckedRoles('c_roles');
-        if (!username) throw new Error('用户名不能为空');
-        if (!password) throw new Error('密码不能为空');
-        if (!roles.length) throw new Error('至少选择一个角色');
-        const body = { username, password, displayName: displayName || null, roles };
-        const resp = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (!resp.ok) { const txt = await resp.text(); throw new Error(`创建失败: ${resp.status} ${txt}`); }
-        setMsg(true, '创建成功');
-        resetCreateForm();
-        reloadPage(currentPage);
-    } catch (err) { console.error(err); setMsg(false, err.message || '创建失败'); }
-}
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
 
-function openEdit(id, displayNameEnc) {
-    const displayName = decodeURIComponent(displayNameEnc || '');
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td colspan="6">
-            <div class="grid-3">
-                <div class="form-item">
-                    <label class="muted">显示名称</label>
-                    <input id="e_displayName_${id}" type="text" value="${escapeHtml(displayName)}" />
-                </div>
-                <div class="form-item">
-                    <label class="muted">新密码（可选）</label>
-                    <input id="e_password_${id}" type="password" placeholder="留空则不修改" />
-                </div>
-                <div class="form-item" style="grid-column: 1 / span 3">
-                    <label class="muted">角色（若设置则覆盖）</label>
-                    <div class="roles-inline">
-                        <label class="badge role-admin"><input type="checkbox" name="e_roles_${id}" value="ADMIN" /> ADMIN</label>
-                        <label class="badge role-maintainer"><input type="checkbox" name="e_roles_${id}" value="MAINTAINER" /> MAINTAINER</label>
-                        <label class="badge role-viewer"><input type="checkbox" name="e_roles_${id}" value="VIEWER" /> VIEWER</label>
+        // 数字动画
+        function animateNumber(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const startValue = parseInt(element.textContent) || 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+                
+                element.textContent = currentValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+            
+            requestAnimationFrame(updateNumber);
+        }
+
+        // 加载用户列表
+        async function reloadPage(page) {
+            try {
+                pageSize = parseInt(document.getElementById('pageSize').value) || 20;
+                
+                let url = `${API_BASE}/admin/users/page?page=${page}&size=${pageSize}`;
+                if (searchKeyword) {
+                    url += `&keyword=${encodeURIComponent(searchKeyword)}`;
+                }
+                
+                const data = await fetchJson(url);
+                const users = data.content || [];
+                
+                currentPage = data.number || page;
+                totalPages = data.totalPages || 1;
+                totalElements = data.totalElements || users.length;
+
+                renderUserTable(users);
+                updatePageInfo();
+                loadStats();
+                
+                showMsg('用户数据加载成功', 'success');
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`加载用户失败：${err.message}`, 'error');
+            }
+        }
+
+        // 更新分页信息
+        function updatePageInfo() {
+            const pageInfo = document.getElementById('pageInfo');
+            pageInfo.textContent = `第 ${Math.min(currentPage + 1, Math.max(totalPages, 1))}/${Math.max(totalPages, 1)} 页，共 ${totalElements} 条`;
+
+            // 更新按钮状态
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
+        }
+
+        // 搜索功能
+        function onQuickSearch(event) {
+            if (event.key === 'Enter') {
+                onSearch();
+            }
+        }
+
+        function onSearch() {
+            searchKeyword = document.getElementById('quickSearch').value.trim();
+            currentPage = 0;
+            reloadPage(currentPage);
+        }
+
+        // 分页功能
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage -= 1;
+                reloadPage(currentPage);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                currentPage += 1;
+                reloadPage(currentPage);
+            }
+        }
+
+        // 表单提交
+        async function submitCreate(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('c_username').value.trim();
+            const displayName = document.getElementById('c_displayName').value.trim();
+            const password = document.getElementById('c_password').value;
+            const roles = Array.from(document.querySelectorAll("input[name='c_roles']:checked")).map(i => i.value);
+            
+            if (!username) {
+                setCreateMsg('用户名不能为空', 'error');
+                return;
+            }
+            if (!password) {
+                setCreateMsg('密码不能为空', 'error');
+                return;
+            }
+            if (roles.length === 0) {
+                setCreateMsg('至少选择一个用户角色', 'error');
+                return;
+            }
+
+            try {
+                const payload = {
+                    username: username,
+                    displayName: displayName || null,
+                    password: password,
+                    roles: roles
+                };
+                
+                const created = await fetchJson(`${API_BASE}/admin/users`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                setCreateMsg(`用户创建成功：${created.username} (ID=${created.id})`, 'success');
+                document.getElementById('createForm').reset();
+                reloadPage(0);
+                
+            } catch (err) {
+                console.error(err);
+                setCreateMsg(`创建失败：${err.message}`, 'error');
+            }
+        }
+
+        // 编辑功能
+        function openEditForm(id, displayNameEnc) {
+            const displayName = decodeURIComponent(displayNameEnc || '');
+            const tbody = document.getElementById('userTbody');
+            
+            // 移除之前的编辑行
+            const existingEditRow = document.querySelector('.edit-form-row');
+            if (existingEditRow) {
+                existingEditRow.remove();
+            }
+            
+            // 创建编辑行
+            const editRow = document.createElement('tr');
+            editRow.className = 'edit-form-row slide-in';
+            editRow.innerHTML = `
+                <td colspan="6">
+                    <div class="edit-form-grid">
+                        <div class="form-group">
+                            <label>显示名称</label>
+                            <input type="text" id="e_displayName_${id}" class="modern-input" value="${escapeHtml(displayName)}" placeholder="显示名称">
+                        </div>
+                        <div class="form-group">
+                            <label>新密码（可选）</label>
+                            <input type="password" id="e_password_${id}" class="modern-input" placeholder="留空则不修改密码">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>用户角色（若设置则覆盖）</label>
+                            <div class="roles-grid">
+                                <label class="role-checkbox role-admin">
+                                    <input type="checkbox" name="e_roles_${id}" value="ADMIN">
+                                    <span><i class="fas fa-user-shield"></i> 管理员</span>
+                                </label>
+                                <label class="role-checkbox role-maintainer">
+                                    <input type="checkbox" name="e_roles_${id}" value="MAINTAINER">
+                                    <span><i class="fas fa-user-cog"></i> 维护人员</span>
+                                </label>
+                                <label class="role-checkbox role-viewer">
+                                    <input type="checkbox" name="e_roles_${id}" value="VIEWER">
+                                    <span><i class="fas fa-user"></i> 普通用户</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="actions">
-                <button class="btn btn-success" onclick="applyEdit(${id})">保存</button>
-                <button class="btn btn-ghost" onclick="reloadPage(currentPage)">取消</button>
-            </div>
-        </td>`;
-    const tbody = document.getElementById('userTbody');
-    tbody.insertBefore(row, tbody.firstChild);
-}
+                    <div class="modern-flex" style="gap: var(--space-3);">
+                        <button class="modern-btn modern-btn-success" onclick="applyEdit(${id})">
+                            <i class="fas fa-save"></i>
+                            保存更新
+                        </button>
+                        <button class="modern-btn modern-btn-secondary" onclick="cancelEdit()">
+                            <i class="fas fa-times"></i>
+                            取消编辑
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            tbody.insertBefore(editRow, tbody.firstChild);
+            editRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
-async function applyEdit(id) {
-    try {
-        const displayName = document.getElementById(`e_displayName_${id}`).value.trim();
-        const password = document.getElementById(`e_password_${id}`).value;
-        const roles = Array.from(document.querySelectorAll(`input[name='e_roles_${id}']:checked`)).map(i => i.value);
-        const body = {};
-        if (displayName) body.displayName = displayName;
-        if (password) body.password = password;
-        if (roles.length) body.roles = roles;
-        const resp = await fetch(`/api/admin/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (!resp.ok) { const txt = await resp.text(); throw new Error(`更新失败: ${resp.status} ${txt}`); }
-        setMsg(true, '更新成功');
-        reloadPage(currentPage);
-    } catch (err) { console.error(err); setMsg(false, err.message || '更新失败'); }
-}
+        async function applyEdit(id) {
+            const displayName = document.getElementById(`e_displayName_${id}`).value.trim();
+            const password = document.getElementById(`e_password_${id}`).value;
+            const roles = Array.from(document.querySelectorAll(`input[name='e_roles_${id}']:checked`)).map(i => i.value);
+            
+            const payload = {};
+            if (displayName) payload.displayName = displayName;
+            if (password) payload.password = password;
+            if (roles.length > 0) payload.roles = roles;
+            
+            if (Object.keys(payload).length === 0) {
+                showMsg('没有需要更新的内容', 'warning');
+                return;
+            }
 
-async function deleteUser(id) {
-    if (!confirm('确认删除该用户？')) return;
-    try {
-        const resp = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
-        if (!resp.ok && resp.status !== 204) { const txt = await resp.text(); throw new Error(`删除失败: ${resp.status} ${txt}`); }
-        setMsg(true, '删除成功');
-        reloadPage(currentPage);
-    } catch (err) { console.error(err); setMsg(false, err.message || '删除失败'); }
-}
+            try {
+                await fetchJson(`${API_BASE}/admin/users/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                
+                showMsg('用户更新成功', 'success');
+                cancelEdit();
+                reloadPage(currentPage);
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`更新失败：${err.message}`, 'error');
+            }
+        }
 
-window.addEventListener('DOMContentLoaded', () => { reloadPage(0); toggleTableClass(); });
-</script>
+        function cancelEdit() {
+            const editRow = document.querySelector('.edit-form-row');
+            if (editRow) {
+                editRow.remove();
+            }
+        }
+
+        // 删除功能
+        async function deleteUser(id) {
+            if (!confirm('确认删除该用户？此操作不可恢复。')) return;
+            
+            try {
+                const resp = await fetch(`${API_BASE}/admin/users/${id}`, { method: 'DELETE' });
+                if (!resp.ok && resp.status !== 204) {
+                    const txt = await resp.text();
+                    throw new Error(`删除失败: ${resp.status} ${txt}`);
+                }
+                
+                showMsg('用户删除成功', 'success');
+                reloadPage(currentPage);
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`删除失败：${err.message}`, 'error');
+            }
+        }
+
+        // 导出功能
+        function exportUsers() {
+            try {
+                const url = `${API_BASE}/admin/users/export`;
+                window.open(url, '_blank');
+                showMsg('用户数据导出中...', 'info');
+            } catch (err) {
+                console.error(err);
+                showMsg('导出失败：' + err.message, 'error');
+            }
+        }
+
+        // 表单重置
+        function resetCreateForm() {
+            document.getElementById('createForm').reset();
+            setCreateMsg('表单已重置', 'success');
+        }
+
+        // 工具函数
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            reloadPage(0);
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    reloadPage(currentPage);
+                }
+                if (e.ctrlKey && e.key === 'n') {
+                    e.preventDefault();
+                    document.getElementById('c_username').focus();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

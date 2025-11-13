@@ -3,209 +3,1085 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>位置管理 - 资产管理后台</title>
+    <title>位置管理 - 智能资产管理系统</title>
+    <link rel="stylesheet" href="/css/modern-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, Helvetica, sans-serif; background: #fff; margin: 0; }
-        header { background: #1677ff; color: #fff; padding: 14px 20px; }
-        header h1 { margin:0; font-size: 18px; }
-        nav { background: #f5f6fa; border-bottom: 1px solid #eee; padding: 10px 20px; }
-        nav a { margin-right: 16px; color: #1677ff; text-decoration: none; }
-        main { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card { border:1px solid #eee; border-radius: 6px; padding: 14px; }
-        ul.tree { list-style: none; padding-left: 16px; }
-        ul.tree li { margin: 4px 0; }
-        .node { cursor: pointer; }
-        .node small { color: #888; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        label { display:block; font-size: 12px; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box; }
-        textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box; min-height: 80px; }
-        button { padding: 8px 12px; background: #1677ff; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        button.secondary { background: #555; }
-        button.danger { background: #ff4d4f; }
+        /* 位置管理特定样式 */
+        .locations-header {
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+            color: white;
+            padding: var(--space-6) var(--space-8);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .locations-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .locations-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .locations-subtitle {
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .locations-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--gray-900);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            margin-top: var(--space-1);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+            margin-bottom: var(--space-6);
+        }
+
+        .tree-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+
+        .location-tree {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: var(--space-4);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-200);
+        }
+
+        .tree-node {
+            list-style: none;
+            margin: var(--space-2) 0;
+            padding-left: var(--space-4);
+            border-left: 2px solid var(--gray-200);
+        }
+
+        .tree-node-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
+        }
+
+        .tree-node-item:hover {
+            background: var(--primary-50);
+            border-color: var(--primary-200);
+            transform: translateX(2px);
+        }
+
+        .tree-node-item.selected {
+            background: var(--primary-100);
+            border-color: var(--primary-300);
+            color: var(--primary-700);
+        }
+
+        .tree-node-item.selected::before {
+            content: '▶';
+            color: var(--primary-600);
+            font-weight: bold;
+            margin-right: var(--space-1);
+        }
+
+        .tree-node-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+        }
+
+        .tree-node-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .tree-node-name {
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-900);
+        }
+
+        .tree-node-meta {
+            font-size: var(--font-size-xs);
+            color: var(--gray-600);
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .tree-node-actions {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        .btn-icon-xs {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-sm);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-icon-primary {
+            background: var(--primary-100);
+            color: var(--primary-600);
+        }
+
+        .btn-icon-primary:hover {
+            background: var(--primary-200);
+            transform: scale(1.1);
+        }
+
+        .btn-icon-danger {
+            background: var(--danger-100);
+            color: var(--danger-600);
+        }
+
+        .btn-icon-danger:hover {
+            background: var(--danger-200);
+            transform: scale(1.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .form-group label {
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-700);
+            font-size: var(--font-size-sm);
+        }
+
+        .form-group label.required::after {
+            content: ' *';
+            color: var(--danger-500);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--space-3);
+            margin-top: var(--space-4);
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+            padding: var(--space-3);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+        }
+
+        .breadcrumb-item {
+            color: var(--gray-600);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary-600);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .breadcrumb-separator {
+            color: var(--gray-400);
+        }
+
+        .location-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .type-building {
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-200);
+        }
+
+        .type-floor {
+            background: var(--green-50);
+            color: var(--green-700);
+            border: 1px solid var(--green-200);
+        }
+
+        .type-room {
+            background: var(--orange-50);
+            color: var(--orange-700);
+            border: 1px solid var(--orange-200);
+        }
+
+        .type-storage {
+            background: var(--purple-50);
+            color: var(--purple-700);
+            border: 1px solid var(--purple-200);
+        }
+
+        .type-other {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            .locations-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tree-node-meta {
+                flex-direction: column;
+                gap: var(--space-1);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .locations-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tree-expand {
+            animation: treeExpand 0.3s ease-out;
+        }
+
+        @keyframes treeExpand {
+            from {
+                opacity: 0;
+                transform: scaleY(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scaleY(1);
+            }
+        }
     </style>
-    <script>
-        let selectedLocation = null;
-        let locationsById = {};
-
-        async function loadTree() {
-            const res = await fetch('/api/locations/tree');
-            const roots = await res.json();
-            // 构建 ID 索引
-            locationsById = {};
-            const indexAll = (list) => list.forEach(l => { locationsById[l.id] = l; if (l.children) indexAll(l.children); });
-            indexAll(roots);
-            // 渲染树
-            const container = document.getElementById('tree');
-            container.innerHTML = '';
-            roots.forEach(r => container.appendChild(renderNode(r)));
-            // 填充父位置下拉
-            fillParentSelect();
-        }
-
-        function renderNode(loc) {
-            const li = document.createElement('li');
-            const level = (loc.level ?? 0);
-            li.innerHTML = `<span class='node' onclick='selectLocation(${loc.id})'>${loc.name} <small>(类型: ${loc.type ?? ''}, 等级: ${level})</small></span>`;
-            if (loc.children && loc.children.length) {
-                const ul = document.createElement('ul');
-                ul.className = 'tree';
-                loc.children.forEach(ch => ul.appendChild(renderNode(ch)));
-                li.appendChild(ul);
-            }
-            return li;
-        }
-
-        function selectLocation(id) {
-            selectedLocation = locationsById[id];
-            document.getElementById('form-title').textContent = '编辑位置';
-            document.getElementById('name').value = selectedLocation.name ?? '';
-            document.getElementById('type').value = selectedLocation.type ?? '';
-            document.getElementById('managerId').value = selectedLocation.managerId ?? '';
-            document.getElementById('parentId').value = selectedLocation.parentId ?? '';
-            document.getElementById('level').value = selectedLocation.level ?? 0;
-            document.getElementById('btn-delete').disabled = false;
-        }
-
-        function fillParentSelect() {
-            const select = document.getElementById('parentId');
-            const old = select.value;
-            select.innerHTML = '<option value="">-- 无（根） --</option>';
-            Object.values(locationsById).forEach(l => {
-                const opt = document.createElement('option');
-                opt.value = l.id;
-                const level = l.level ?? 0;
-                opt.textContent = `${' '.repeat(level * 2)}${l.name}`;
-                select.appendChild(opt);
-            });
-            select.value = old;
-        }
-
-        function openCreateForm() {
-            selectedLocation = null;
-            document.getElementById('form-title').textContent = '新增位置';
-            document.getElementById('name').value = '';
-            document.getElementById('type').value = '';
-            document.getElementById('managerId').value = '';
-            document.getElementById('parentId').value = '';
-            document.getElementById('level').value = 0;
-            document.getElementById('btn-delete').disabled = true;
-        }
-
-        function onParentChange() {
-            const parentIdVal = document.getElementById('parentId').value;
-            if (!parentIdVal) {
-                document.getElementById('level').value = 0;
-            } else {
-                const p = locationsById[Number(parentIdVal)];
-                const level = (p && p.level != null) ? (p.level + 1) : 1;
-                document.getElementById('level').value = level;
-            }
-        }
-
-        async function saveLocation() {
-            const payload = {
-                name: document.getElementById('name').value.trim(),
-                type: document.getElementById('type').value,
-                managerId: (document.getElementById('managerId').value.trim() || null) ? Number(document.getElementById('managerId').value.trim()) : null,
-                parentId: (document.getElementById('parentId').value || null) ? Number(document.getElementById('parentId').value) : null,
-                level: (document.getElementById('level').value || null) ? Number(document.getElementById('level').value) : null
-            };
-            if (!payload.name) { alert('位置名称不能为空'); return; }
-            if (!payload.type) { alert('位置类型不能为空'); return; }
-            const headers = { 'Content-Type': 'application/json' };
-            let res;
-            if (selectedLocation && selectedLocation.id) {
-                res = await fetch(`/api/locations/${selectedLocation.id}`, { method: 'PUT', headers, body: JSON.stringify(payload) });
-            } else {
-                res = await fetch('/api/locations', { method: 'POST', headers, body: JSON.stringify(payload) });
-            }
-            if (!res.ok) {
-                const text = await res.text();
-                alert('保存失败：' + text);
-            } else {
-                alert('保存成功');
-                openCreateForm();
-                loadTree();
-            }
-        }
-
-        async function deleteLocation() {
-            if (!selectedLocation || !selectedLocation.id) return;
-            if (!confirm('确认删除该位置？（必须无子节点）')) return;
-            const res = await fetch(`/api/locations/${selectedLocation.id}`, { method: 'DELETE' });
-            if (!res.ok) {
-                const text = await res.text();
-                alert('删除失败：' + text);
-            } else {
-                alert('删除成功');
-                openCreateForm();
-                loadTree();
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            openCreateForm();
-            loadTree();
-            document.getElementById('parentId').addEventListener('change', onParentChange);
-        });
-    </script>
 </head>
 <body>
-<header>
-    <h1>资产管理后台</h1>
-    <div style="float:right"><a href="/logout" style="color:#fff">退出登录</a></div>
-    <div style="clear:both"></div>
-    </header>
-<nav>
-    <a href="/admin">仪表盘</a>
-    <a href="/admin/suppliers">供应商管理</a>
-    <a href="/admin/categories">设备分类管理</a>
-    <a href="/admin/equipment">设备管理</a>
-    <a href="/swagger-ui/index.html" target="_blank">接口文档</a>
+    <!-- 现代化导航栏 -->
+    <nav class="modern-nav">
+        <div class="modern-flex-between">
+            <a href="/admin" class="modern-nav-brand">
+                <i class="fas fa-desktop"></i>
+                资产管理系统
+            </a>
+            <ul class="modern-nav-menu">
+                <li><a href="/admin" class="modern-nav-link">仪表板</a></li>
+                <li><a href="/admin/users" class="modern-nav-link">用户管理</a></li>
+                <li><a href="/admin/equipment" class="modern-nav-link">设备管理</a></li>
+                <li><a href="/admin/transfers" class="modern-nav-link">设备调用</a></li>
+                <li><a href="/admin/locations" class="modern-nav-link active">位置管理</a></li>
+                <li><a href="/admin/categories" class="modern-nav-link">分类管理</a></li>
+                <li><a href="/admin/suppliers" class="modern-nav-link">供应商管理</a></li>
+                <li><a href="/logout" class="modern-nav-link">退出登录</a></li>
+            </ul>
+        </div>
     </nav>
-<main>
-    <div class="card">
-        <h3>位置树</h3>
-        <ul class="tree" id="tree"></ul>
-    </div>
-    <div class="card">
-        <h3 id="form-title">新增位置</h3>
-        <div class="form-grid">
-            <div>
-                <label>名称</label>
-                <input id="name" placeholder="位置名称">
+
+    <div class="modern-container">
+        <!-- 页面头部 -->
+        <div class="locations-header fade-in">
+            <h1 class="locations-title">
+                <i class="fas fa-map-marker-alt"></i>
+                位置管理
+            </h1>
+            <p class="locations-subtitle">管理资产存放位置，构建层次化的位置结构</p>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="locations-stats fade-in">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--primary-100); color: var(--primary-600);">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalLocations">-</div>
+                    <div class="stat-label">位置总数</div>
+                </div>
             </div>
-            <div>
-                <label>类型</label>
-                <select id="type">
-                    <option value="">-- 请选择 --</option>
-                    <option value="教室">教室</option>
-                    <option value="办公室">办公室</option>
-                    <option value="实验室">实验室</option>
-                    <option value="仓库">仓库</option>
-                    <option value="其他">其他</option>
-                </select>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--blue-100); color: var(--blue-600);">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="buildingCount">-</div>
+                    <div class="stat-label">建筑物</div>
+                </div>
             </div>
-            <div>
-                <label>负责人ID（可选）</label>
-                <input id="managerId" type="number" placeholder="管理员用户ID">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--green-100); color: var(--green-600);">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="floorCount">-</div>
+                    <div class="stat-label">楼层</div>
+                </div>
             </div>
-            <div>
-                <label>父位置（可选）</label>
-                <select id="parentId"></select>
-            </div>
-            <div>
-                <label>层级（自动计算）</label>
-                <input id="level" type="number" readonly>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--orange-100); color: var(--orange-600);">
+                    <i class="fas fa-door-open"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="roomCount">-</div>
+                    <div class="stat-label">房间</div>
+                </div>
             </div>
         </div>
-        <div style="margin-top:10px; display:flex; gap:10px;">
-            <button onclick="saveLocation()">保存</button>
-            <button class="secondary" onclick="openCreateForm()">重置</button>
-            <button id="btn-delete" class="danger" onclick="deleteLocation()" disabled>删除</button>
+
+        <!-- 操作栏 -->
+        <div class="action-bar fade-in">
+            <div class="action-buttons">
+                <button class="modern-btn modern-btn-primary" onclick="reloadTree()">
+                    <i class="fas fa-sync-alt"></i>
+                    刷新数据
+                </button>
+                <button class="modern-btn modern-btn-success" onclick="expandAll()">
+                    <i class="fas fa-expand"></i>
+                    展开全部
+                </button>
+                <button class="modern-btn modern-btn-secondary" onclick="collapseAll()">
+                    <i class="fas fa-compress"></i>
+                    收起全部
+                </button>
+            </div>
+            <div class="modern-input-group" style="max-width: 300px;">
+                <input type="text" id="quickSearch" class="modern-input" placeholder="搜索位置名称..." onkeyup="onQuickSearch(event)">
+                <button class="modern-btn modern-btn-primary" onclick="onSearch()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="msg" class="modern-alert hidden"></div>
+
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <!-- 位置树形结构 -->
+            <div class="tree-card fade-in">
+                <div class="modern-card-header">
+                    <h3><i class="fas fa-sitemap"></i> 位置结构</h3>
+                    <span class="modern-badge modern-badge-info">点击节点进行选择</span>
+                </div>
+                <div class="breadcrumb" id="breadcrumb">
+                    <span class="breadcrumb-item">根位置</span>
+                </div>
+                <div class="location-tree" id="locationTree">
+                    <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-4);"></i>
+                        <div>正在加载位置数据...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 表单区域 -->
+            <div class="form-card fade-in">
+                <div class="modern-card-header">
+                    <h3><i class="fas fa-plus-circle"></i> <span id="formTitle">添加位置</span></h3>
+                    <button type="button" class="modern-btn modern-btn-sm modern-btn-outline" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        重置
+                    </button>
+                </div>
+                <form id="locationForm" onsubmit="return submitLocation(event)">
+                    <input type="hidden" id="locationId" value="">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="required">位置名称</label>
+                            <input type="text" id="locationName" class="modern-input" required placeholder="请输入位置名称">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">位置类型</label>
+                            <select id="locationType" class="modern-select" required>
+                                <option value="">选择类型</option>
+                                <option value="BUILDING">建筑物</option>
+                                <option value="FLOOR">楼层</option>
+                                <option value="ROOM">房间</option>
+                                <option value="STORAGE">仓库</option>
+                                <option value="OTHER">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>上级位置</label>
+                            <select id="parentLocation" class="modern-select">
+                                <option value="">根位置（无上级）</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>位置编码</label>
+                            <input type="text" id="locationCode" class="modern-input" placeholder="可选，用于标识">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>详细地址</label>
+                            <input type="text" id="locationAddress" class="modern-input" placeholder="可选，详细地址信息">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>备注信息</label>
+                            <textarea id="locationRemarks" class="modern-textarea" rows="3" placeholder="可选，备注说明"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="modern-btn modern-btn-primary">
+                            <i class="fas fa-save"></i>
+                            <span id="submitText">添加位置</span>
+                        </button>
+                        <button type="button" class="modern-btn modern-btn-danger" id="deleteBtn" onclick="deleteLocation()" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            删除位置
+                        </button>
+                        <button type="reset" class="modern-btn modern-btn-secondary">
+                            <i class="fas fa-undo"></i>
+                            重置表单
+                        </button>
+                    </div>
+                </form>
+                <div id="formMsg" class="modern-alert hidden"></div>
+            </div>
         </div>
     </div>
-    </main>
+
+    <script>
+        const API_BASE = '/api';
+        
+        let selectedLocation = null;
+        let locationsById = {};
+        let locationTree = [];
+        let searchKeyword = '';
+
+        // 显示消息
+        function showMsg(text, type = 'success') {
+            const msgEl = document.getElementById('msg');
+            msgEl.textContent = text;
+            msgEl.className = `modern-alert modern-alert-${type}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 4000);
+        }
+
+        function setFormMsg(text, type = 'success') {
+            const msgEl = document.getElementById('formMsg');
+            msgEl.textContent = text;
+            msgEl.className = `modern-alert modern-alert-${type}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 5000);
+        }
+
+        // API请求
+        async function fetchJson(url, options = {}) {
+            const resp = await fetch(url, { 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }, 
+                ...options 
+            });
+            if (!resp.ok) {
+                const txt = await resp.text();
+                throw new Error(`HTTP ${resp.status}: ${txt}`);
+            }
+            return resp.json();
+        }
+
+        // 获取位置类型徽章
+        function getLocationTypeBadge(type) {
+            const badges = {
+                'BUILDING': '<span class="location-type-badge type-building"><i class="fas fa-building"></i> 建筑物</span>',
+                'FLOOR': '<span class="location-type-badge type-floor"><i class="fas fa-layer-group"></i> 楼层</span>',
+                'ROOM': '<span class="location-type-badge type-room"><i class="fas fa-door-open"></i> 房间</span>',
+                'STORAGE': '<span class="location-type-badge type-storage"><i class="fas fa-warehouse"></i> 仓库</span>',
+                'OTHER': '<span class="location-type-badge type-other"><i class="fas fa-map-marker-alt"></i> 其他</span>'
+            };
+            return badges[type] || `<span class="location-type-badge type-other">${type}</span>`;
+        }
+
+        // 渲染位置树
+        function renderLocationTree(locations, container, level = 0) {
+            if (!locations || locations.length === 0) return;
+
+            locations.forEach(location => {
+                const nodeItem = document.createElement('div');
+                nodeItem.className = 'tree-node-item';
+                nodeItem.dataset.locationId = location.id;
+                nodeItem.dataset.level = level;
+                
+                const hasChildren = location.children && location.children.length > 0;
+                const indentStyle = `margin-left: ${level * 20}px;`;
+                
+                nodeItem.innerHTML = `
+                    <div class="tree-node-icon" style="${indentStyle}">
+                        ${hasChildren ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle" style="font-size: 6px;"></i>'}
+                    </div>
+                    <div class="tree-node-info">
+                        <div class="tree-node-name">${escapeHtml(location.name)}</div>
+                        <div class="tree-node-meta">
+                            ${getLocationTypeBadge(location.type || 'OTHER')}
+                            <span><i class="fas fa-code"></i> ${location.code || '-'}</span>
+                            <span><i class="fas fa-layer-group"></i> 层级 ${location.level || 0}</span>
+                        </div>
+                    </div>
+                    <div class="tree-node-actions">
+                        <button class="btn-icon-xs btn-icon-primary" onclick="selectLocation(${location.id}); event.stopPropagation();" title="选择位置">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon-xs btn-icon-danger" onclick="deleteLocationById(${location.id}); event.stopPropagation();" title="删除位置">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                nodeItem.addEventListener('click', () => selectLocation(location.id));
+                container.appendChild(nodeItem);
+
+                // 递归渲染子节点
+                if (hasChildren) {
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'tree-node';
+                    childrenContainer.style.display = 'none'; // 默认折叠
+                    renderLocationTree(location.children, childrenContainer, level + 1);
+                    container.appendChild(childrenContainer);
+                    
+                    // 添加展开/折叠功能
+                    nodeItem.addEventListener('click', (e) => {
+                        if (e.target.closest('.tree-node-actions')) return;
+                        
+                        const icon = nodeItem.querySelector('.tree-node-icon i');
+                        const isExpanded = childrenContainer.style.display !== 'none';
+                        
+                        if (isExpanded) {
+                            childrenContainer.style.display = 'none';
+                            icon.className = 'fas fa-chevron-right';
+                        } else {
+                            childrenContainer.style.display = 'block';
+                            childrenContainer.classList.add('tree-expand');
+                            icon.className = 'fas fa-chevron-down';
+                        }
+                    });
+                }
+            });
+        }
+
+        // 加载位置树
+        async function loadTree() {
+            try {
+                const tree = await fetchJson(`${API_BASE}/locations/tree`);
+                locationTree = tree;
+                
+                // 构建ID索引
+                locationsById = {};
+                const indexAll = (list) => {
+                    list.forEach(location => {
+                        locationsById[location.id] = location;
+                        if (location.children) {
+                            indexAll(location.children);
+                        }
+                    });
+                };
+                indexAll(tree);
+
+                // 渲染树
+                const container = document.getElementById('locationTree');
+                container.innerHTML = '';
+                renderLocationTree(tree, container);
+
+                // 填充父位置下拉框
+                fillParentSelect();
+                
+                // 更新统计
+                updateStats();
+                
+                showMsg('位置数据加载成功', 'success');
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`加载位置数据失败：${err.message}`, 'error');
+            }
+        }
+
+        // 填充父位置下拉框
+        function fillParentSelect() {
+            const select = document.getElementById('parentLocation');
+            select.innerHTML = '<option value="">根位置（无上级）</option>';
+            
+            function addOptions(locations, prefix = '') {
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location.id;
+                    option.textContent = `${prefix}${location.name}`;
+                    select.appendChild(option);
+                    
+                    if (location.children && location.children.length > 0) {
+                        addOptions(location.children, prefix + '  ');
+                    }
+                });
+            }
+            
+            addOptions(locationTree);
+        }
+
+        // 选择位置
+        function selectLocation(locationId) {
+            selectedLocation = locationsById[locationId];
+            if (!selectedLocation) return;
+
+            // 更新UI状态
+            document.querySelectorAll('.tree-node-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            const selectedItem = document.querySelector(`[data-location-id="${locationId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('selected');
+                selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // 更新面包屑
+            updateBreadcrumb(selectedLocation);
+
+            // 填充表单
+            fillForm(selectedLocation);
+            
+            // 更新表单标题和按钮
+            document.getElementById('formTitle').textContent = '编辑位置';
+            document.getElementById('submitText').textContent = '更新位置';
+            document.getElementById('deleteBtn').style.display = 'inline-flex';
+        }
+
+        // 更新面包屑
+        function updateBreadcrumb(location) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            const path = [];
+            
+            let current = location;
+            while (current) {
+                path.unshift(current);
+                current = locationsById[current.parentId];
+            }
+            
+            breadcrumb.innerHTML = path.map((loc, index) => `
+                <span class="breadcrumb-item ${index === path.length - 1 ? 'active' : ''}">${escapeHtml(loc.name)}</span>
+                ${index < path.length - 1 ? '<span class="breadcrumb-separator">›</span>' : ''}
+            `).join('');
+        }
+
+        // 填充表单
+        function fillForm(location) {
+            document.getElementById('locationId').value = location.id;
+            document.getElementById('locationName').value = location.name;
+            document.getElementById('locationType').value = location.type || '';
+            document.getElementById('parentLocation').value = location.parentId || '';
+            document.getElementById('locationCode').value = location.code || '';
+            document.getElementById('locationAddress').value = location.address || '';
+            document.getElementById('locationRemarks').value = location.remarks || '';
+        }
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('locationForm').reset();
+            document.getElementById('locationId').value = '';
+            document.getElementById('formTitle').textContent = '添加位置';
+            document.getElementById('submitText').textContent = '添加位置';
+            document.getElementById('deleteBtn').style.display = 'none';
+            
+            selectedLocation = null;
+            
+            // 清除选择状态
+            document.querySelectorAll('.tree-node-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 重置面包屑
+            document.getElementById('breadcrumb').innerHTML = '<span class="breadcrumb-item">根位置</span>';
+            
+            setFormMsg('表单已重置', 'success');
+        }
+
+        // 提交表单
+        async function submitLocation(event) {
+            event.preventDefault();
+            
+            const locationId = document.getElementById('locationId').value;
+            const isUpdate = !!locationId;
+            
+            const payload = {
+                name: document.getElementById('locationName').value.trim(),
+                type: document.getElementById('locationType').value,
+                parentId: document.getElementById('parentLocation').value || null,
+                code: document.getElementById('locationCode').value.trim() || null,
+                address: document.getElementById('locationAddress').value.trim() || null,
+                remarks: document.getElementById('locationRemarks').value.trim() || null
+            };
+
+            try {
+                if (isUpdate) {
+                    await fetchJson(`${API_BASE}/locations/${locationId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                    setFormMsg('位置更新成功', 'success');
+                } else {
+                    const created = await fetchJson(`${API_BASE}/locations`, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    setFormMsg(`位置创建成功：${created.name} (ID=${created.id})`, 'success');
+                    resetForm();
+                }
+                
+                await loadTree();
+                
+            } catch (err) {
+                console.error(err);
+                setFormMsg(`${isUpdate ? '更新' : '创建'}失败：${err.message}`, 'error');
+            }
+        }
+
+        // 删除位置
+        async function deleteLocation() {
+            const locationId = document.getElementById('locationId').value;
+            if (!locationId) return;
+            
+            await deleteLocationById(locationId);
+        }
+
+        async function deleteLocationById(locationId) {
+            const location = locationsById[locationId];
+            if (!location) return;
+            
+            if (!confirm(`确认删除位置 "${location.name}"？\n注意：此操作不可恢复，且会影响相关联的设备记录。`)) return;
+            
+            try {
+                await fetchJson(`${API_BASE}/locations/${locationId}`, { method: 'DELETE' });
+                
+                showMsg('位置删除成功', 'success');
+                resetForm();
+                await loadTree();
+                
+            } catch (err) {
+                console.error(err);
+                showMsg(`删除失败：${err.message}`, 'error');
+            }
+        }
+
+        // 更新统计
+        function updateStats() {
+            const allLocations = Object.values(locationsById);
+            const total = allLocations.length;
+            const buildings = allLocations.filter(l => l.type === 'BUILDING').length;
+            const floors = allLocations.filter(l => l.type === 'FLOOR').length;
+            const rooms = allLocations.filter(l => l.type === 'ROOM').length;
+
+            // 动画更新数字
+            animateNumber('totalLocations', total);
+            animateNumber('buildingCount', buildings);
+            animateNumber('floorCount', floors);
+            animateNumber('roomCount', rooms);
+        }
+
+        // 数字动画
+        function animateNumber(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const startValue = parseInt(element.textContent) || 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+                
+                element.textContent = currentValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+            
+            requestAnimationFrame(updateNumber);
+        }
+
+        // 展开全部
+        function expandAll() {
+            document.querySelectorAll('.tree-node').forEach(node => {
+                node.style.display = 'block';
+                node.classList.add('tree-expand');
+            });
+            
+            document.querySelectorAll('.tree-node-icon i').forEach(icon => {
+                if (icon.classList.contains('fa-chevron-right')) {
+                    icon.className = 'fas fa-chevron-down';
+                }
+            });
+            
+            showMsg('已展开全部位置节点', 'info');
+        }
+
+        // 收起全部
+        function collapseAll() {
+            document.querySelectorAll('.tree-node').forEach(node => {
+                node.style.display = 'none';
+            });
+            
+            document.querySelectorAll('.tree-node-icon i').forEach(icon => {
+                if (icon.classList.contains('fa-chevron-down')) {
+                    icon.className = 'fas fa-chevron-right';
+                }
+            });
+            
+            showMsg('已收起全部位置节点', 'info');
+        }
+
+        // 搜索功能
+        function onQuickSearch(event) {
+            if (event.key === 'Enter') {
+                onSearch();
+            }
+        }
+
+        function onSearch() {
+            searchKeyword = document.getElementById('quickSearch').value.trim().toLowerCase();
+            
+            if (!searchKeyword) {
+                // 清除搜索高亮
+                document.querySelectorAll('.tree-node-item').forEach(item => {
+                    item.style.display = 'flex';
+                });
+                return;
+            }
+            
+            // 搜索并高亮匹配项
+            let foundCount = 0;
+            document.querySelectorAll('.tree-node-item').forEach(item => {
+                const locationId = parseInt(item.dataset.locationId);
+                const location = locationsById[locationId];
+                
+                if (location && location.name.toLowerCase().includes(searchKeyword)) {
+                    item.style.display = 'flex';
+                    item.style.background = 'var(--warning-50)';
+                    item.style.borderColor = 'var(--warning-300)';
+                    foundCount++;
+                    
+                    // 展开父节点
+                    let parent = item.parentElement;
+                    while (parent) {
+                        if (parent.classList.contains('tree-node')) {
+                            parent.style.display = 'block';
+                        }
+                        parent = parent.parentElement;
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            showMsg(`搜索完成，找到 ${foundCount} 个匹配位置`, foundCount > 0 ? 'success' : 'warning');
+        }
+
+        // 重新加载
+        function reloadTree() {
+            showMsg('正在重新加载位置数据...', 'info');
+            loadTree();
+        }
+
+        // 工具函数
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTree();
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    reloadTree();
+                }
+                if (e.ctrlKey && e.key === 'f') {
+                    e.preventDefault();
+                    document.getElementById('quickSearch').focus();
+                }
+                if (e.ctrlKey && e.key === 'n') {
+                    e.preventDefault();
+                    resetForm();
+                    document.getElementById('locationName').focus();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
